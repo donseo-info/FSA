@@ -135,13 +135,15 @@ let page;
 if (pages.length > 0) {
   page = pages[0];
   writeLog('📄 Используем существующую вкладку', 'INFO');
+  // Применяем спуфы к существующей странице
+  await browser.applySpoofs(page);
 } else {
   page = await browser.newPage();
   writeLog('📄 Создана новая вкладка', 'INFO');
+  // Спуфы применяются автоматически через событие 'page' в BrowserController
+  // Даем время спуфам примениться
+  await page.waitForTimeout(500);
 }
-
-// Применяем спуфы к странице
-await browser.applySpoofs(page);
 
 // Переходим на тестовую страницу
 writeLog('🌐 Переходим на тестовую страницу...', 'INFO');
@@ -152,6 +154,36 @@ await page.goto('https://vk.com', {
 
 writeLog('✅ Страница загружена!', 'SUCCESS');
 writeLog(`📄 Заголовок: ${await page.title()}`, 'INFO');
+
+// Проверяем, что спуфы применились
+try {
+  const gpuInfo = await page.evaluate(() => {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    if (gl) {
+      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      if (debugInfo) {
+        return {
+          vendor: gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL),
+          renderer: gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
+        };
+      }
+    }
+    return null;
+  });
+  
+  if (gpuInfo) {
+    writeLog(`🎮 GPU Vendor: ${gpuInfo.vendor}`, 'INFO');
+    writeLog(`🎮 GPU Renderer: ${gpuInfo.renderer}`, 'INFO');
+  }
+  
+  // Проверяем User Agent
+  const userAgent = await page.evaluate(() => navigator.userAgent);
+  writeLog(`🌐 User Agent: ${userAgent.substring(0, 100)}...`, 'INFO');
+  
+} catch (error) {
+  writeLog(`⚠️ Ошибка проверки спуфов: ${error.message}`, 'WARN');
+}
 
 // Держим браузер открытым
 writeLog('\n⏳ Браузер будет открыт 60 секунд...', 'INFO');

@@ -202,6 +202,12 @@ class BrowserController {
       console.log('📄 Новая страница обнаружена');
       await page.waitForTimeout(100);
       await this.applySpoofs(page);
+      
+      // Применяем спуфы к новым фреймам
+      page.on('frameattached', async (frame) => {
+        console.log('🖼️ Новый фрейм обнаружен');
+        await this.applySpoofsToFrame(frame);
+      });
     });
     
     console.log('✅ Подключение установлено\n');
@@ -222,6 +228,25 @@ class BrowserController {
     
     page.setDefaultTimeout(60000);
     page.setDefaultNavigationTimeout(60000);
+  }
+
+  /**
+   * Применяет спуфы к фрейму
+   */
+  async applySpoofsToFrame(frame) {
+    try {
+      // Применяем спуфы к фрейму через evaluateOnNewDocument
+      await frame.evaluateOnNewDocument(this.spoofs.screen.getInjectionCode());
+      await frame.evaluateOnNewDocument(this.spoofs.language.getInjectionCode());
+      await frame.evaluateOnNewDocument(this.spoofs.hardware.getInjectionCode());
+      await frame.evaluateOnNewDocument(this.spoofs.webgl.getInjectionCode());
+      await frame.evaluateOnNewDocument(this.spoofs.canvas.getInjectionCode());
+      await frame.evaluateOnNewDocument(this.spoofs.audio.getInjectionCode());
+      
+      console.log('🖼️ Спуфы применены к фрейму');
+    } catch (error) {
+      console.log(`⚠️ Ошибка применения спуфов к фрейму: ${error.message}`);
+    }
   }
 
   /**
