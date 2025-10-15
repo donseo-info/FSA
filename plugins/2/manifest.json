@@ -1,0 +1,99 @@
+{
+"update_url": "https://clients2.google.com/service/update2/crx",
+
+  "manifest_version": 3,
+  "name": "__MSG_appName__",
+  "description": "__MSG_shortDesc__",
+  "default_locale": "ru",
+  "version": "1.4.6.3",
+  "permissions": [
+    "downloads",
+    "storage",
+    "offscreen",
+    "contextMenus",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "*://*.music.yandex.by/*",
+    "*://*.music.yandex.ru/*",
+    "*://*.music.yandex.ua/*",
+    "*://*.music.yandex.kz/*",
+    "*://*.music.yandex.uz/*",
+    "*://*.music.yandex.com/*",
+    "*://storage.mds.yandex.net/*",
+    "*://*.storage.yandex.net/*",
+    "*://avatars.yandex.net/*"
+  ],
+  "optional_host_permissions": [
+    "https://shy-glade-6a6e.dreambuilder-first.workers.dev/*",
+    "https://ymdmusic.top/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_ui": {
+    "page": "options/index.html",
+    "open_in_tab": false
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.music.yandex.uz/*",
+        "*://*.music.yandex.by/*",
+        "*://*.music.yandex.ru/*",
+        "*://*.music.yandex.ua/*",
+        "*://*.music.yandex.kz/*",
+        "*://*.music.yandex.com/*"
+      ],
+      "js": [
+        "libs/promos/promos.js",
+        "content.js"
+      ],
+      "css": [
+        "libs/promos/promos.css",
+        "styles/content.css"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "images/*",
+        "help/downloader.html",
+        "view/ffmpegTagger.html",
+        "premium/index.html"
+      ],
+      "matches": [
+        "*://*.music.yandex.uz/*",
+        "*://*.music.yandex.by/*",
+        "*://*.music.yandex.ru/*",
+        "*://*.music.yandex.ua/*",
+        "*://*.music.yandex.kz/*",
+        "*://*.music.yandex.com/*"
+      ]
+    },
+    {
+      "resources": [
+        "libs/ffmpeg/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "action": {
+    "default_icon": "images/logo/lg-inactive.png",
+    "default_popup": "view/popup.html"
+  },
+  "icons": {
+    "16": "images/logo/lg-16_x_16.png",
+    "48": "images/logo/lg-48_x_48.png",
+    "64": "images/logo/lg-64_x_64.png",
+    "96": "images/logo/lg-96_x_96.png",
+    "128": "images/logo/lg-128_x_128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';",
+    "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'; child-src 'self';"
+  }
+}

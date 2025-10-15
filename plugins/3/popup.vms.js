@@ -1,0 +1,1 @@
+﻿"use strict";(self.webpackChunkvk_music_saver=self.webpackChunkvk_music_saver||[]).push([[887],{65690:()=>{const e=document.getElementById("donateText");e&&(e.innerText=chrome.i18n.getMessage("popup_donate"));const t=document.getElementById("feedbackText");t&&(t.innerText=chrome.i18n.getMessage("popup_feedback"))}},e=>{e(e.s=65690)}]);

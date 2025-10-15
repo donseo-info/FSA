@@ -1,0 +1,1 @@
+navigator.serviceWorker.onmessage=e=>{let a=e.data;if("offscreen"===a.target)switch(a.cmd){case"getBase64":e.ports[0].postMessage({cmd:"downloadBlob",blobUrl:URL.createObjectURL(a.blobData.Blob),fileName:a.blobData.Name,id:a.blobData.Id})}},navigator.serviceWorker.startMessages();

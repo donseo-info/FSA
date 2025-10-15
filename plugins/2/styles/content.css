@@ -1,0 +1,843 @@
+.ymdv3-icon {
+  background: 50% no-repeat;
+  background-size: 100%;
+  margin: 6px;
+  width: 28px;
+  height: 28px;
+
+  -webkit-box-flex: 0;
+  flex: 0 0 auto;
+  position: relative;
+}
+
+.ymdv3-new .ymdv3-icon-lossless,
+.ymdv3-new .ymdv3-icon-lossless-multi {
+  background-color: #fc3 !important;
+  border-radius: 4px;
+  transition: all .3s;
+  overflow: visible;
+}
+
+.ymdv3-new .ymdv3-icon-lossless-multi {
+  border-radius: 50% !important;
+}
+
+.ymdv3-new .ymdv3-icon-lossless,
+.ymdv3-new .ymdv3-icon-lossless-multi {
+  opacity: 0.4;
+}
+
+.ymdv3-new .ymdv3-icon-lossless:hover,
+.ymdv3-new .ymdv3-icon-lossless-multi:hover {
+  opacity: 1;
+}
+
+.player__ymdv3_icon {
+  display: inline-block;
+}
+
+.ymdv3-new .player__ymdv3_icon {
+  display: inline-block;
+  cursor: pointer;
+  opacity: .5;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+}
+
+.ymdv3-new .player__ymdv3_icon:hover {
+  opacity: 1;
+}
+
+.ymdv3-new .player-controls__btn_download {
+  padding: 4px;
+  width: 32px;
+  height: 32px;
+}
+
+.ymdv3-new .page__ymdv3-button {
+  order: 15;
+  padding: 8px;
+  width: 40px;
+  height: 40px;
+  overflow: visible;
+}
+
+.ymdv3-new .page__ymdv3-button .ymdv3-icon {
+  margin: 0;
+}
+
+.ymdv3-new .page__track_ymdv3-icon {
+  display: block;
+}
+
+.sidebar__ymdv3-button {
+  margin-left: 10px;
+}
+
+.d-track__sidebar:hover .d-track__actions .sidebar__track_ymdv3-icon {
+  display: inline-block;
+  visibility: visible;
+}
+
+.sidebar__track_ymdv3-icon {
+  margin: 0px;
+  margin-right: 16px;
+  display: none;
+  width: 24px;
+  height: 24px;
+  opacity: .4;
+  overflow: hidden;
+  vertical-align: top;
+  -webkit-transition: color .2s;
+  transition: color .2s;
+}
+
+.sidebar__track_ymdv3-icon:hover {
+  opacity: 1.0 !important;
+}
+
+.sidebar__ymdv3-icon {
+  display: inline-block;
+  opacity: .45;
+
+  width: 24px;
+  height: 24px;
+
+  transition-property: opacity, transform, -webkit-transform;
+  transition-duration: 0.1s, 0.1s, 0.1s;
+  transition-timing-function: linear, linear, linear;
+  transition-delay: 0s, 0s, 0s;
+}
+
+.sidebar__ymdv3-button:hover .sidebar__ymdv3-icon {
+  opacity: .85 !important;
+}
+
+.page__ymdv3-icon {
+  display: inline-block;
+  opacity: .45;
+
+  width: 24px;
+  height: 24px;
+
+  transition-property: opacity, transform, -webkit-transform;
+  transition-duration: 0.1s, 0.1s, 0.1s;
+  transition-timing-function: linear, linear, linear;
+  transition-delay: 0s, 0s, 0s;
+}
+
+.page__ymdv3-button:hover .page__ymdv3-icon {
+  opacity: .85 !important;
+}
+
+.ymdv3-icon-dark {
+  background-image: url('chrome-extension://__MSG_@@extension_id__/images/icon-dark.svg');
+}
+
+.ymdv3-icon-light {
+  background-image: url('chrome-extension://__MSG_@@extension_id__/images/icon-light.svg');
+}
+
+.ymdv3-icon-light.sidebar__ymdv3-icon {
+  opacity: 1.0 !important;
+}
+
+.player-controls__track-container {
+  right: 300px !important;
+}
+
+.speed {
+  display: inline-block !important;
+}
+
+.page__track_ymdv3-icon {
+  margin: 0px;
+  margin-right: 16px;
+  display: none;
+  width: 24px;
+  height: 24px;
+  opacity: .4;
+  overflow: hidden;
+  vertical-align: top;
+  -webkit-transition: color .2s;
+  transition: color .2s;
+}
+
+.d-track:hover .page__track_ymdv3-icon {
+  display: inline-block;
+}
+
+.page__track_ymdv3-icon:hover {
+  opacity: 1.0 !important;
+}
+
+.page__ymdv3-button .page__ymdv3-icon.ymdv3-icon-light {
+  opacity: 1.0 !important;
+}
+
+
+.ymdv3-top {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.ymdv3-top .ymdv3-spinner-popup {
+  position: relative;
+  display: flex;
+  gap: 5px;
+  flex-direction: column;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: .0625rem solid rgba(0, 0, 0, .1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  color: rgb(51, 51, 51);
+  z-index: 100;
+  min-width: 180px;
+}
+
+/* Header Row Styles */
+.ymdv3-top .ymdv3-spinner-popup .header-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ymdv3-top .ymdv3-spinner-popup .close-btn,
+.ymdv3-top .ymdv3-spinner-popup .skip-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  opacity: .5;
+  transition: all .3s;
+}
+
+.ymdv3-top .ymdv3-spinner-popup .skip-btn {
+  width: 14px;
+  height: 14px;
+  opacity: .3;
+}
+
+.ymdv3-top .ymdv3-spinner-popup .close-btn:hover,
+.ymdv3-top .ymdv3-spinner-popup .skip-btn:hover {
+  opacity: 1;
+}
+
+/* Center Row Styles */
+.ymdv3-top .ymdv3-spinner-popup .center-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.ymdv3-top .ymdv3-spinner-popup .progress-text {
+  font-size: 16px;
+  line-height: 1;
+  color: #333;
+  text-align: center;
+}
+
+.ymdv3-top .ymdv3-spinner-popup .spinner-block {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.ymdv3-top .ymdv3-spinner-popup .spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 4px solid rgb(70 70 70);
+  border-top-color: rgb(252 202 0);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: ymdv3-spin 1s linear infinite;
+}
+
+.ymdv3-top .ymdv3-spinner-popup .progress-folder {
+  font-size: 12px;
+  border-radius: 10px;
+  padding: 4px 8px;
+  border: 1px solid gray;
+  cursor: pointer;
+  transition: all .3s;
+}
+
+.ymdv3-top .ymdv3-spinner-popup .progress-folder:hover {
+  border: 1px solid #222;
+  color: #222;
+}
+
+/* Footer Row Styles */
+.ymdv3-top .ymdv3-spinner-popup .footer-row {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.ymdv3-top .ymdv3-spinner-popup .error-container {
+  width: 100%;
+  min-height: 16px;
+}
+
+.ymdv3-top .ymdv3-spinner-popup .bottom-row {
+  position: relative;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Rate buttons */
+.ymdv3-top .ymdv3-spinner-popup .rate-btn {
+  display: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 100%;
+  opacity: .8;
+  cursor: pointer;
+  transition: all .5s;
+  opacity: 0;
+  background-size: cover;
+}
+
+.ymdv3-top .ymdv3-spinner-popup .rate-btn.rate-good {
+  background-image: url('chrome-extension://__MSG_@@extension_id__/images/rate-good.png');
+}
+
+.ymdv3-top .ymdv3-spinner-popup .rate-btn.rate-bad {
+  background-image: url('chrome-extension://__MSG_@@extension_id__/images/rate-bad.png');
+}
+
+.ymdv3-top .ymdv3-spinner-popup .stop-btn {
+  position: absolute;
+  left: 55px;
+  width: 22px;
+  height: 22px;
+  border-radius: 100%;
+  opacity: .3;
+  cursor: pointer;
+  transition: all .5s;
+  background: rgba(0,0,0,.24);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ymdv3-top .ymdv3-spinner-popup .stop-btn.waiting {
+  opacity: 1;
+}
+
+.ymdv3-top .ymdv3-spinner-popup .stop-btn.waiting::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(255, 255, 255, 0.3) 45%,
+    rgba(255, 255, 255, 0.3) 55%,
+    transparent 60%,
+    transparent 100%
+  );
+  animation: diagonal-line 1.5s linear infinite;
+}
+
+@keyframes diagonal-line {
+  0% {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+  100% {
+    transform: translate(50%, 50%) rotate(45deg);
+  }
+}
+
+.ymdv3-top .ymdv3-spinner-popup .stop-btn:hover,
+.ymdv3-top .ymdv3-spinner-popup .rate-btn:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.ymdv3-top .ymdv3-spinner-popup.done .stop-btn {
+  display: none;
+  pointer-events: none;
+}
+
+.ymdv3-top .ymdv3-spinner-popup.done .rate-btn {
+  display: inline-flex;
+  opacity: .8;
+}
+
+/* Inner spinner elements */
+.ymdv3-top .ymdv3-spinner-popup .inner {
+  background-image: url('chrome-extension://__MSG_@@extension_id__/images/check-mark.png');
+  background-size: cover;
+  -webkit-box-flex: 0;
+  position: relative;
+  display: inline-block;
+  opacity: 1;
+  width: 24px;
+  height: 24px;
+  opacity: 0;
+}
+
+.ymdv3-top .ymdv3-spinner-popup.done .spinner {
+  animation: none;
+  border-color: rgb(252 202 0);
+  background-color: rgb(252 202 0);
+}
+
+.ymdv3-top .ymdv3-spinner-popup.done .inner {
+  opacity: 1;
+}
+
+/* Download logs button */
+.ymdv3-top .ymdv3-spinner-popup .download-logs-btn {
+  display: none;
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.ymdv3-top .ymdv3-spinner-popup.done .download-logs-btn {
+  display: inline-flex;
+  animation: ymdv3-donate-dance 1.2s cubic-bezier(.36, .07, .19, .97) 1;
+}
+
+.ymdv3-top .ymdv3-spinner-popup .download-logs-btn:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.ymdv3-top .ymdv3-spinner-popup .download-logs-btn svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Donate button */
+.ymdv3-top .ymdv3-spinner-popup .donate-btn {
+  display: none;
+  opacity: 0;
+  width: 16px;
+  height: 16px;
+  background-size: cover;
+  background-image: url('chrome-extension://__MSG_@@extension_id__/images/donate.png');
+  cursor: pointer;
+  transition: all 1s;
+}
+
+.ymdv3-top .ymdv3-spinner-popup.done .donate-btn {
+  display: inline-flex;
+  opacity: .7;
+  /* animation: ymdv3-donate-dance 1.2s cubic-bezier(.36, .07, .19, .97) 1; */
+}
+
+.ymdv3-top .ymdv3-spinner-popup .donate-btn:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+/* Subscription notice */
+.ymdv3-top .ymdv3-spinner-popup .no-subscription {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff3131;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-top: 5px;
+}
+
+/* Error message */
+.ymdv3-top .ymdv3-spinner-popup .ymdv3-error {
+  cursor: help;
+  text-align: center;
+  color: #e31235;
+  display: block;
+  font-size: 13px;
+}
+
+/* Spinner percentage */
+.ymdv3-spinner-percent {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 500;
+  font-size: 12px;
+  color: rgb(34, 34, 34);
+  cursor: help;
+  z-index: 2;
+}
+
+.ymdv3-spinner-popup.done .ymdv3-spinner-percent {
+  display: none;
+}
+
+/* Animation keyframes */
+@keyframes ymdv3-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ymdv3-donate-dance {
+  0% {
+    transform: scale(1) translateY(0) rotate(0deg);
+  }
+
+  10% {
+    transform: scale(1.05, 0.95) translateY(-5px) rotate(-5deg);
+  }
+
+  20% {
+    transform: scale(0.95, 1.05) translateY(-10px) rotate(5deg);
+    opacity: 1;
+  }
+
+  30% {
+    transform: scale(1.1, 0.9) translateY(-5px) rotate(-3deg);
+    opacity: 1;
+  }
+
+  40% {
+    transform: scale(1, 1) translateY(0) rotate(3deg);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.05, 0.95) translateY(-8px) rotate(-2deg);
+  }
+
+  60% {
+    transform: scale(0.95, 1.05) translateY(-4px) rotate(2deg);
+  }
+
+  70% {
+    transform: scale(1, 1) translateY(0) rotate(-1deg);
+    opacity: 1;
+  }
+
+  80% {
+    transform: scale(1.1, 0.9) translateY(-3px) rotate(1deg);
+    opacity: 1;
+  }
+
+  90% {
+    transform: scale(1, 1) translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1) translateY(0) rotate(0deg);
+  }
+}
+
+/* Lossless Info Popover Styles */
+.ymdv3-lossless-popover {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 6px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  font-size: 12px;
+  min-width: 200px;
+  color: #333;
+  z-index: 10000;
+}
+
+.ymdv3-lossless-popover-content {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ymdv3-lossless-popover-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ymdv3-lossless-popover-label {
+  font-weight: 500;
+  color: #666;
+}
+
+.ymdv3-lossless-popover-value {
+  font-weight: 600;
+  color: #333;
+}
+
+.ymdv3-lossless-popover-loading {
+  text-align: center;
+  padding: 5px;
+  color: #666;
+}
+
+.ymdv3-error {
+  cursor: help;
+  text-align: center;
+  color: #e31235;
+}
+
+/* Dark theme support */
+.theme-dark .ymdv3-lossless-popover {
+  background-color: rgba(40, 40, 40, 0.95);
+  color: #eee;
+}
+
+.theme-dark .ymdv3-lossless-popover-label {
+  color: #bbb;
+}
+
+.theme-dark .ymdv3-lossless-popover-value {
+  color: #fff;
+}
+
+.theme-dark .ymdv3-lossless-popover-loading {
+  color: #bbb;
+}
+
+.theme-dark .ymdv3-error {
+  color: #ff6b6b;
+}
+
+/* Add styles for download log gear icon and popup after existing rules */
+
+/* Download log settings gear icon */
+
+.ymdv3-gear-icon {
+  display: inline-flex;
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: -8px;
+  right: -8px;
+  border-radius: 50%;
+  background-size: contain;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.3s ease;
+  z-index: 1001;
+  pointer-events: none;
+}
+
+.ym-dark-theme .ymdv3-gear-icon svg {
+  stroke: #e6e6e6;
+  fill: #e6e6e6;
+}
+
+.ymdv3-gear-icon-container:hover .ymdv3-gear-icon {
+  opacity: 0.3;
+  pointer-events: auto;
+}
+
+.ymdv3-gear-icon:hover {
+  opacity: 1 !important;
+  pointer-events: auto;
+  transform: rotate(45deg);
+}
+
+/* Download log popup */
+.ymdv3-download-log-popup {
+  position: fixed;
+  background-color: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  min-width: 300px;
+  max-width: 400px;
+  z-index: 10000;
+}
+
+/* Popup header */
+.ymdv3-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.ymdv3-popup-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.ymdv3-popup-close {
+  cursor: pointer;
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 20px;
+}
+
+/* Popup content */
+.ymdv3-popup-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ymdv3-popup-content p {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* Index controls in one line */
+.ymdv3-index-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ymdv3-index-label {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.ymdv3-index-input {
+  width: 70px;
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.ymdv3-index-input:focus {
+  border-color: #fcc200;
+  outline: none;
+}
+
+/* File input styling */
+.ymdv3-file-input-label {
+  display: inline-block;
+  max-width: 200px;
+  padding: 6px 12px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s;
+}
+
+.ymdv3-file-input-label:hover {
+  background-color: #e0e0e0;
+}
+
+.ymdv3-file-name {
+  font-size: 14px;
+  word-break: break-all;
+}
+
+.ymdv3-dynamic-content {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.ymdv3-dynamic-content-cell {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Popup footer */
+.ymdv3-popup-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 8px;
+}
+
+/* Message container */
+.ymdv3-message-container {
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.ymdv3-message-container.ymdv3-error {
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+/* Dark theme modifications */
+.theme-black .ymdv3-download-log-popup,
+.ym-dark-theme .ymdv3-download-log-popup {
+  background-color: #222;
+  color: #fff;
+}
+
+.theme-black .ymdv3-index-description,
+.ym-dark-theme .ymdv3-index-description {
+  color: #aaa;
+}
+
+.theme-black .ymdv3-popup-footer,
+.ym-dark-theme .ymdv3-popup-footer {
+  border-top-color: #444;
+}
+
+.theme-black .ymdv3-index-input,
+.ym-dark-theme .ymdv3-index-input {
+  background-color: #333;
+  border-color: #555;
+  color: #fff;
+}
+
+.theme-black .ymdv3-index-input:focus,
+.ym-dark-theme .ymdv3-index-input:focus {
+  border-color: #fcc200;
+}
+
+.theme-black .ymdv3-file-input-label,
+.ym-dark-theme .ymdv3-file-input-label {
+  background-color: #333;
+  color: #fff;
+}
+
+.theme-black .ymdv3-file-input-label:hover,
+.ym-dark-theme .ymdv3-file-input-label:hover {
+  background-color: #444;
+}
+
+.theme-black .ymdv3-message-container.ymdv3-error,
+.ym-dark-theme .ymdv3-message-container.ymdv3-error {
+  background-color: #4a2c2c;
+  color: #ff6b6b;
+  border-color: #6a3a3a;
+}
+
+/* Download log popup overlay */
+.ymdv3-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+}

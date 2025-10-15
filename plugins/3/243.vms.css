@@ -1,0 +1,199 @@
+﻿/* stylelint-disable-next-line selector-pseudo-class-disallowed-list */
+:root {
+  /* sizes */
+  --vkui_internal--tabbar_height: 48px;
+  --vkui_internal--grid_avatar_image_offset: 2px;
+  --vkui_internal--slider_thumb_size: 28px;
+  --vkui_internal--side_cell_gap: calc(
+    var(--vkui--size_base_padding_horizontal--regular) - var(--vkui--spacing_size_s)
+  );
+  --vkui_internal--panel_header_height: var(--vkui--size_panel_header_height--regular);
+
+  /**
+   * [a11y][focus visible]
+   */
+  --vkui_internal--outline_width: 2px;
+  --vkui_internal--outline: var(--vkui_internal--outline_width, 2px) solid
+    var(--vkui--color_stroke_accent);
+  /**
+   * [a11y][windows high contrast mode]
+   *
+   * windows compatible outline reset
+   * @see https://benmyers.dev/blog/whcm-outlines/
+   */
+  --vkui_internal--outline-reset: var(--vkui_internal--outline_width) solid transparent;
+
+  /**
+   * "Safe Zone" добавляет невидимую интерактивную область, по которой пользователь будет вводить мышкой и тем самым
+   * компонент будет оставаться активным.
+   *
+   * > ⚠️ Используется для динамического изменения в JS файлах.
+   */
+  --vkui_internal--popover_safe_zone_padding: 8px;
+
+  /* colors */
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list */
+  --vkui_internal--white: #fff;
+
+  /* insets */
+  --vkui_internal--safe_area_inset_top: 0px;
+  --vkui_internal--safe_area_inset_right: 0px;
+  --vkui_internal--safe_area_inset_bottom: 0px;
+  --vkui_internal--safe_area_inset_left: 0px;
+
+  /* animations */
+  --vkui_internal--duration: 0.7s;
+  --vkui_internal--slide-easing: cubic-bezier(0.16, 1, 0.3, 1);
+  --vkui_internal--spring-easing: cubic-bezier(0.22, 1, 0.6, 1.03);
+
+  /* z_index */
+  --vkui_internal--z_index_cell_dragging: 100;
+  --vkui_internal--z_index_tabs: 2;
+  --vkui_internal--z_index_fixed_layout: 3;
+  --vkui_internal--z_index_panel_header_context: 4;
+  --vkui_internal--z_index_panel_header_fade: 5;
+  --vkui_internal--z_index_pull_to_refresh: 9;
+  --vkui_internal--z_index_panel_header: 10;
+  --vkui_internal--z_index_split_layout_panel_header: 11;
+
+  /* z_index Tappable isolate */
+  --vkui_internal--z_index_tappable_state: 0;
+  --vkui_internal--z_index_tappable_element: 1;
+
+  /* z_index Banner isolate */
+  --vkui_internal--z_index_banner_background: 0;
+  --vkui_internal--z_index_banner_content: 1;
+  --vkui_internal--z_index_banner_hover: 2;
+
+  /* z_index FormField isolate */
+  --vkui_internal--z_index_form_field_element: 1;
+  --vkui_internal--z_index_form_field_border: 2;
+  --vkui_internal--z_index_form_field_status: 3;
+  --vkui_internal--z_index_form_field_border_hover: 4;
+  --vkui_internal--z_index_form_field_focus: 5;
+  --vkui_internal--z_index_form_field_side: 6;
+
+  /* z_index ImageBase isolate */
+  --vkui_internal--z_index_image_base_border: 0;
+  --vkui_internal--z_index_image_base_overlay: 1;
+  --vkui_internal--z_index_image_base_badge: 2;
+  --vkui_internal--z_index_image_base_positioned_element: 3;
+
+  /* z_index HorizontalScroll isolate */
+  --vkui_internal--z_index_horizontal_scroll_arrow: 1;
+
+  /* Layout Gaps */
+  --vkui_internal--row_gap: 0px;
+  --vkui_internal--column_gap: 0px;
+
+  /* Spacing size */
+  --vkui_internal--spacing_size: 0px;
+
+  /** ModalOverlay props */
+  --vkui_internal--modal-overlay--opacity: 1;
+}
+@supports (padding-top: constant(safe-area-inset-top)) {
+  /* stylelint-disable-next-line selector-pseudo-class-disallowed-list */
+  :root {
+    --vkui_internal--safe_area_inset_top: constant(safe-area-inset-top);
+    --vkui_internal--safe_area_inset_right: constant(safe-area-inset-right);
+    --vkui_internal--safe_area_inset_bottom: constant(safe-area-inset-bottom);
+    --vkui_internal--safe_area_inset_left: constant(safe-area-inset-left);
+  }
+}
+@supports (padding-top: env(safe-area-inset-top)) {
+  /* stylelint-disable-next-line selector-pseudo-class-disallowed-list */
+  :root {
+    --vkui_internal--safe_area_inset_top: env(safe-area-inset-top);
+    --vkui_internal--safe_area_inset_right: env(safe-area-inset-right);
+    --vkui_internal--safe_area_inset_bottom: env(safe-area-inset-bottom);
+    --vkui_internal--safe_area_inset_left: env(safe-area-inset-left);
+  }
+}
+
+/* stylelint-disable selector-pseudo-class-disallowed-list */
+
+:root {
+  --vkui--size_border--regular: var(--vkui--size_border1x--regular);
+}
+
+@media (min-resolution: 2dppx) {
+  :root {
+    --vkui--size_border--regular: var(--vkui--size_border2x--regular);
+  }
+}
+
+@media (min-resolution: 3dppx) {
+  :root {
+    --vkui--size_border--regular: var(--vkui--size_border3x--regular);
+  }
+}
+
+/*
+ * .vkui класс в режиме full необходим на элементе html,
+ * чтобы правильно устанавливалось значение color-scheme,
+ * окрашивающее фон html и скроллбар в цвета текущей цветовой
+ * схемы.
+ * Так как color-scheme зависит от vkui токена, то в
+ * full режиме класс токенов vkui также должен
+ * быть установлен на html.
+ *
+ * В SSR есть проблема - чтобы на сервере правильно установить
+ * нужный класс, для токенов надо знать предпочитаемую цветовую
+ * схему пользователя и передать её через свойство appearance.
+ * Если ошибиться со схемой на сервере, то пользователь
+ * может получить не ту схему, либо может увидеть как интерфейс моргает
+ * из-за переключения со светлой темы на тёмную.
+ * Чтобы окончательно избавиться от этой проблемы нужно
+ * в vkui-tokens создавать темы, в которые сразу же зашиты обе цветовые схемы.
+ * А переключение между темами задавалось бы через медиа выражения
+ * с помощью prefers-color-scheme.
+ * */
+/* stylelint-disable-next-line selector-max-type */
+.vkui > body,
+.vkui,
+.vkui__root {
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  color-scheme: var(--vkui--colors_scheme);
+}
+.vkui {
+  /*
+   * TODO [>=8]: Убрать background с html элемента, но для этого надо
+   * чтобы height у всех родителей Panel вплоть до html имели
+   * min-height: 100% вместо height: 100% иначе фон html выглядывает в
+   * многоколоночном режиме если чуть ниже проскролить контент.
+   */
+  background: var(--vkui--color_background);
+}
+.vkui__root {
+  /* чтобы можно было ограничить размеры приложения
+   * извне с помощью max-height, max-width */
+  max-width: inherit;
+  max-height: inherit;
+}
+.vkui__root--embedded {
+  background: var(--vkui--color_background);
+}
+.vkui--layout-card {
+  background: var(--vkui--color_background);
+}
+.vkui--layout-plain {
+  background: var(--vkui--color_background_content);
+}
+/* отключаем нативный pull-to-refresh при взаимодействии с компонентом
+ * PullToRefresh или при открывании модалки */
+.vkui--disable-overscroll-behavior {
+  /* Safari >= 16 */
+  overscroll-behavior-y: none;
+}
+
+.vmsSwitch--_ME21{--vkui_internal--Switch__track_width: 32px;--vkui_internal--Switch__track_height: 20px;--vkui_internal--Switch__handle_width: 16.5px;--vkui_internal--Switch__handle_widthNoUnit--checked: 16;--vkui_internal--Switch__handle_widthNoUnit--not-checked: 10;--vkui_internal--Switch__handle_height: 16.5px;--vkui_internal--Switch__handle_heightNoUnit: 16.5}
+.vmsSettControl__skeleton--H3Hui{margin-left:18px;right:3px}
+.vmsActionsMenu--oXPVl{position:relative;contain:content;display:flex;flex-direction:column;z-index:1;padding:4px;background-color:var(--vkui--color_background_content);border-radius:10px;min-width:100px;max-width:320px;border:.5px solid var(--vkui--color_transparent--active);box-shadow:var(--vkui--elevation3);box-sizing:border-box;font-family:var(--palette-vk-font, var(--vkui--font_text--font_family--regular))}
+a.vmsActionsMenuAction--Qz12f,a.vmsActionsMenuAction--Qz12f:hover{-webkit-text-decoration:none;text-decoration:none}.vmsActionsMenuAction--Qz12f{display:flex;flex:1 0 auto;align-items:center;gap:12px;width:100%;background-color:inherit;border:0;border-radius:6px;transition:background-color 160ms ease;outline:none;transform:translate3d(0, 0, 0);box-sizing:border-box}.vmsActionsMenuAction--clickable--zqSAH{cursor:pointer}.vmsActionsMenuAction--loading--maWKo{position:relative}.vmsActionsMenuAction--loading--maWKo::after{content:"";position:absolute;left:40px;background-color:var(--vkui--color_skeleton_to);width:calc(100% - 48px);height:12px;border-radius:4px}.vmsActionsMenuAction--loading--maWKo .vmsActionsMenuAction__title--f5DiF{opacity:0}.vmsActionsMenuAction--Qz12f:disabled{opacity:.6;cursor:default}.vmsActionsMenuAction--hover--eArig:not(:disabled):hover{background-color:var(--vkui--color_transparent--hover)}.vmsActionsMenuAction--active--dKO8y:not(:disabled){background-color:var(--vkui--color_transparent--hover)}.vmsActionsMenuAction--size-mini--_Rpwx{min-height:25px;padding:2px 4px;border-radius:4px}.vmsActionsMenuAction--size-regular--JSPJN{min-height:32px;padding:4px 8px;border-radius:6px}.vmsActionsMenuAction--size-large--Kz6XO{gap:14px;min-height:38px;padding:4px 10px;border-radius:8px;margin-bottom:2px}.vmsActionsMenuAction--size-max--I5pyz{gap:14px;min-height:41px;padding:4px 10px;border-radius:8px;margin-bottom:2px}.vmsActionsMenuAction--size-max--I5pyz,.vmsActionsMenuAction--size-large--Kz6XO:last-child{margin-bottom:0}.vmsActionsMenuAction__icon--CIshp{font-style:inherit;display:flex;flex-shrink:0;height:20px;align-items:center;justify-content:center}.vmsActionsMenuAction--primary--shY5I .vmsActionsMenuAction__icon--CIshp{color:var(--vkui--color_icon_accent)}.vmsActionsMenuAction--secondary--CHnF5 .vmsActionsMenuAction__icon--CIshp{color:var(--vkui--color_icon_secondary)}.vmsActionsMenuAction--danger--bdbcN .vmsActionsMenuAction__icon--CIshp,.vmsActionsMenuAction--danger--bdbcN .vmsActionsMenuAction__title--f5DiF{color:var(--vkui--color_text_negative)}.vmsActionsMenuAction--warning--dIPqy .vmsActionsMenuAction__icon--CIshp{color:var(--vkui--color_accent_orange)}.vmsActionsMenuAction__title--f5DiF{flex:1 1 auto;white-space:nowrap;text-align:left;overflow:hidden;text-overflow:ellipsis;font-weight:400;font-size:13px;line-height:16px;font-family:var(--palette-vk-font, var(--vkui--font_text--font_family--regular));letter-spacing:-0.01em;color:var(--vkui--color_text_primary)}.vmsActionsMenuAction--size-max--I5pyz .vmsActionsMenuAction__title--f5DiF,.vmsActionsMenuAction--size-large--Kz6XO .vmsActionsMenuAction__title--f5DiF{font-size:14px}.vmsActionsMenuAction__subtitle--Z9G_c{display:block;white-space:nowrap;text-align:left;overflow:hidden;text-overflow:ellipsis;font-weight:400;font-size:12px;line-height:14px;letter-spacing:-0.01em;color:var(--vkui--color_text_secondary)}.vmsActionsMenuAction--multiline--rdni9 .vmsActionsMenuAction__title--f5DiF,.vmsActionsMenuAction--multiline--rdni9 .vmsActionsMenuAction__subtitle--Z9G_c{overflow:visible;overflow:initial;text-overflow:initial;white-space:inherit}
+.vmsPopoverReforged--V5vFI{background:var(--vkui--color_background_modal) !important;border-radius:var(--vkui--size_border_radius--regular) !important;box-shadow:var(--vkui--elevation3) !important}.vmsPopoverReforged--V5vFI[class*="vkui-anim-fade-in--"]{animation:vmsreforged-anim-fade-in--aKnVn .1s ease-in forwards !important}.vmsPopoverReforged--V5vFI[class*="vkui-anim-fade-out--"]{animation:vmsreforged-anim-fade-out--uvPWU .1s ease-in forwards !important}.vmsPopoverReforged--noBackground--h4DVt{background:none !important;border-radius:none !important;box-shadow:none !important}@keyframes vmsreforged-anim-fade-in--aKnVn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}@keyframes vmsreforged-anim-fade-out--uvPWU{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(5px)}}
+.vmsActionsMenuActionSeparator--JUUAV{border-top:1px solid var(--vkui--color_separator_primary);margin:4px 8px}
+.vkuiHeader__content-in>.vmsBadge--IKjGK{display:inline-block;margin-left:4px}.vkuiButton__after>.vmsBadge--IKjGK{margin-left:0px}.vmsTooltip--Ije4F{max-width:200px;-webkit-user-select:none;-moz-user-select:none;user-select:none}.vmsWrapper--dRflm{display:flex;align-items:center;gap:4px}
+.vmsPopover--vQI8f{min-width:200px;max-width:280px}.vmsLink--bCCEJ:hover{-webkit-text-decoration:underline !important;text-decoration:underline !important}

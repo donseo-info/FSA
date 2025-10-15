@@ -1,0 +1,522 @@
+{
+  "appName": {
+    "message": "Яндекс Музыка | Mp3 Downloader"
+  },
+  "shortDesc": {
+    "message": "Скачивайте музыку в один клик и слушайте офлайн с Yandex Music Downloader V3! Поддержка нового дизайна и Lossless качества!"
+  },
+  "download_current": {
+    "message": "Загрузить текущий трек"
+  },
+  "download_mult": {
+    "message": "Загрузить"
+  },
+  "progress_prefix": {
+    "message": "Скачивается"
+  },
+  "progress_prefix_done": {
+    "message": "Скачано"
+  },
+  "loadingMsg": {
+    "message": "Загрузка..."
+  },
+  "reaction_bad": {
+    "message": "Нужна помощь"
+  },
+  "reaction_good": {
+    "message": "Оставить отзыв"
+  },
+  "folder_open": {
+    "message": "Папка загрузок"
+  },
+  "folder_open_title": {
+    "message": "Открыть папку загрузок"
+  },
+  "tips": {
+    "message": "Спасибо на кофе"
+  },
+  "tips_title": {
+    "message": "Поблагодарить разработчиков"
+  },
+  "skip_popup": {
+    "message": "Не показывать"
+  },
+  "skip_popup_title": {
+    "message": "Не показывать окно прогресса.\nМожно будет включить обратно на странице настроек."
+  },
+  "progress_close": {
+    "message": "Закрыть"
+  },
+  "popup_status": {
+    "message": "Статус"
+  },
+  "popup_name": {
+    "message": "Название"
+  },
+  "popup_time_lift": {
+    "message": "Время"
+  },
+  "download_speed": {
+    "message": "Скорость"
+  },
+  "popup_rate_us": {
+    "message": "Оценить"
+  },
+  "popup_support": {
+    "message": "Поддержка"
+  },
+  "options_title": {
+    "message": "Открыть настройки"
+  },
+  "email_copied": {
+    "message": "Скопировано!"
+  },
+  "popup_support_title": {
+    "message": "Нужна помощь? Напишите нам на dreambuilder.first@gmail.com\n(нажать чтобы скопировать)"
+  },
+  "errors_text": {
+    "message": "Ошибки"
+  },
+  "errors_title": {
+    "message": "Не удалось скачать все треки, вы можете проверить Системный журнал для более подробной информации"
+  },
+  "stop_all_title": {
+    "message": "Остановить все загрузки в очереди"
+  },
+  "continue_all_title": {
+    "message": "Продолжить все загрузки в очереди"
+  },
+  "clear_all_title": {
+    "message": "Очистить очередь загрузки"
+  },
+  "settings_header": {
+    "message": "Настройки"
+  },
+  "filename_format_label": {
+    "message": "Формат имени файла"
+  },
+  "available_variables_text": {
+    "message": "Доступные переменные: {title}, {version}, {artist}, {artists}, {album}, {tracknumber}, {trackindex}"
+  },
+  "preview_label": {
+    "message": "Предпросмотр:"
+  },
+  "download_albums_label": {
+    "message": "Скачивать альбомы в отдельные папки"
+  },
+  "download_artists_label": {
+    "message": "Скачивать исполнителей в отдельные папки"
+  },
+  "download_playlists_label": {
+    "message": "Скачивать плейлисты в отдельные папки"
+  },
+  "show_progress_popup_label": {
+    "message": "Показывать всплывающее окно прогресса"
+  },
+  "save_settings_button": {
+    "message": "Сохранить настройки"
+  },
+  "settings_saved_message": {
+    "message": "Настройки успешно сохранены!"
+  },
+  "new_design_warning_title": {
+    "message": "Новый дизайн не поддерживается"
+  },
+  "new_design_warning_text": {
+    "message": "Приложение пока не поддерживает новый дизайн. Пожалуйста, переключитесь обратно на старый дизайн, чтобы продолжить скачивать музыку."
+  },
+  "logPageName": {
+    "message": "Системный журнал"
+  },
+  "downloadLogsTitle": {
+    "message": "Системный журнал"
+  },
+  "totalLogsLabel": {
+    "message": "Всего записей"
+  },
+  "errorLogsLabel": {
+    "message": "Записи с ошибками"
+  },
+  "filterPlaceholder": {
+    "message": "Фильтровать записи..."
+  },
+  "removedFromYMTracksBtn": {
+    "message": "Удалено из Яндекс Музыки"
+  },
+  "uploadedByUserTracksBtn": {
+    "message": "Загружено пользователем"
+  },
+  "clearLogsBtn": {
+    "message": "Очистить записи"
+  },
+  "exportLogsBtn": {
+    "message": "Экспортировать записи"
+  },
+  "noLogsAvailable": {
+    "message": "Записи недоступны."
+  },
+  "logsCleared": {
+    "message": "Записи очищены."
+  },
+  "noLogsToExport": {
+    "message": "Нет записей для экспорта."
+  },
+  "textFilterTitle": {
+    "message": "Фильтр"
+  },
+  "clearFiltersBtn": {
+    "message": "Очистить фильтр"
+  },
+  "try_this_app": {
+    "message": "Узнать больше"
+  },
+  "show_next_app": {
+    "message": "Следующее приложение"
+  },
+  "show_promos": {
+    "message": "Ещё приложения"
+  },
+  "hide_promos": {
+    "message": "Скрыть"
+  },
+  "options_download_lossless": {
+    "message": "Загрузка в премиум качестве"
+  },
+  "options_download_lossless_help": {
+    "message": "FLAC > AAC > HE-AAC > MP3 - расширение будет пытаться скачать файлы в наилучшем качестве (LOSSLESS).<br> - Доступно только для <u>Яндекс Плюс</u> пользователей."
+  },
+  "download_lossless_btn": {
+    "message": "Загрузить в премиум качестве"
+  },
+  "lossless_info_header": {
+    "message": "Lossless качество"
+  },
+  "experimental_badge": {
+    "message": "В разработке"
+  },
+  "experimental_badge_title": {
+    "message": "Позволяет скачивать в Lossless качестве, если Yandex Music позволяет"
+  },
+  "errorTracksBtn": {
+    "message": "Ошибки"
+  },
+  "lossless_quality_label": {
+    "message": "Качество"
+  },
+  "lossless_codec_label": {
+    "message": "Доступный формат"
+  },
+  "lossless_bitrate_label": {
+    "message": "Битрейт"
+  },
+  "lossless_loading": {
+    "message": "Загрузка..."
+  },
+  "lossless_info_error": {
+    "message": "Не удалось загрузить информацию"
+  },
+  "no_subscription_title": {
+    "message": "Ваша подписка не обнаружена.\nПожалуйста, убедитесь, что вы: залогинились в Яндекс Музыку, имеете подписку, не находитесь в Incognito режиме.\nТак же расширение работает нестабильно на URL вида https://next.yandex.music.** > перейдите на обычный URL БЕЗ Next > https://yandex.music.**"
+  },
+  "no_subscription_text": {
+    "message": "Подписка не найдена"
+  },
+  "noSpaceLeft": {
+    "message": "Недостаточно места на устройстве (папка скачивания или папка временных файлов Chrome).\nПожалуйста, освободите некоторое пространство и попробуйте снова"
+  },
+  "premium_page_title": {
+    "message": "Доступ к премиум-функциям"
+  },
+  "premium_downloads_badge_title": {
+    "message": "Скачано в премиум качестве"
+  },
+  "premium_status_label": {
+    "message": "Текущий план"
+  },
+  "premium_status_free": {
+    "message": "Бесплатный"
+  },
+  "premium_status_premium": {
+    "message": "Премиум"
+  },
+  "premium_valid_until": {
+    "message": "Действителен до"
+  },
+  "premium_status_expired": {
+    "message": "Истёк"
+  },
+  "premium_expired_on": {
+    "message": "Истёк"
+  },
+  "premium_key_label": {
+    "message": "Введите секретный ключ"
+  },
+  "premium_key_placeholder": {
+    "message": "Ваш секретный ключ"
+  },
+  "premium_activate_button": {
+    "message": "Применить ключ"
+  },
+  "premium_donate_text": {
+    "message": "Получите премиум-ключ, сделав пожертвование"
+  },
+  "premium_features_title": {
+    "message": "Премиум-функции"
+  },
+  "premium_features_list": {
+    "message": "✓ Загрузка в MP3 как обычно без ограничений<br>✓ Загрузка в Lossless качестве (По одному треку, Пробный Lossless 10 загрузок)<br><br><b>Премиум План:</b><br>✓ Всё из Бесплатного +<br>✓ Загрузка в Lossless качестве - <b>Безлимитные загрузки!</b><br>✓ Загрузка плейлистов в Lossless качестве!<br>✓ Приоритетная поддержка"
+  },
+  "premium_key_invalid": {
+    "message": "Неверный ключ. Пожалуйста, попробуйте еще раз."
+  },
+  "premium_key_valid": {
+    "message": "Премиум успешно активирован!"
+  },
+  "validating_key": {
+    "message": "Проверка ключа..."
+  },
+  "premium_features_tooltip": {
+    "message": "Премиум функции"
+  },
+  "premium_key_instructions": {
+    "message": "Нажмите на кнопку 'Получить Доступ' и введите ключ, полученный после доната"
+  },
+  "premium_permission_required": {
+    "message": "Требуется разрешение: Нам необходимо разрешение для проверки вашего премиум ключа. Пожалуйста, разрешите доступ при появлении запроса."
+  },
+  "premium_lossless_count": {
+    "message": "Ваши загрузки в Lossless: <b>0</b>"
+  },
+  "premium_recommended": {
+    "message": "Рекомендуем"
+  },
+  "premium_premium_plan_title": {
+    "message": "Премиум план"
+  },
+  "premium_premium_plan_features": {
+    "message": "✓ Загрузка в Lossless качестве - <b>Безлимитные загрузки!</b><br>✓ Загрузка <b>плейлистов</b> в Lossless качестве!<br>✓ Приоритетная поддержка и доступ к новым функциям"
+  },
+  "premium_get_plan": {
+    "message": "Хочу Премиум"
+  },
+  "premium_how_to_get": {
+    "message": "Как получить Премиум доступ?"
+  },
+  "premium_consent_text": {
+    "message": "<img src='img/filltips.gif' alt='Как заполнить форму доната' class='tips-gif'><b>🎯 Как получить Премиум:</b><br>1️⃣ Сделайте донат на любую сумму больше выбранного плана (Пример: 1010 RUB = доступ на год, 1991 = пожизненный доступ)<br>2️⃣ В поле 'Приватный комментарий' <b><u>ОБЯЗАТЕЛЬНО</u> укажите ваш email</b><br><br>👉 После оплаты на указанный email придет секретный ключ для активации<br>👉 Введите его на этой странице и наслаждайтесь полными возможностями с Yandex Music Downloader v3!<br><br><hr>❓ <b>Частые вопросы:</b><br>Что если я потерял ключ \\ не пришло уведомление на почту \\ не могу оплатить?<br>→ 📧 Напишите нам в поддержку (dreambuilder.first@gmail.com) - мы найдем выход из ситуации в индивидуальном режиме!<br><br>А что если приложение перестанет работать через некоторое время, а я уже заплатил?<br>→ ⚠️ Учитывая, что мы неофициальное приложение Yandex и зависим от их API, периодически возникают проблемы, которые мы стараемся МОМЕНТАЛЬНО решать.<br>→ Тем не менее, риск поломок, конечно, существует, поэтому, внося донат, подтвердите, что вы делаете это добровольно и не на последние деньги (иначе пользуйтесь MP3-скачиванием совершенно бесплатно)."
+  },
+  "premium_redirect_message": {
+    "message": "Вы успешно скачали 20 треков в Lossless качестве!. Активируйте Премиум план и продолжайте скачивать Lossless без ограничений!"
+  },
+  "app_version": {
+    "message": "Версия приложения"
+  },
+  "premium_agree_terms": {
+    "message": "Я согласен с условиями использования"
+  },
+  "premium_proceed_donate": {
+    "message": "Перейти к оплате"
+  },
+  "error_access_denied": {
+    "message": "Отказано в доступе при сохранении файла"
+  },
+  "error_no_space": {
+    "message": "Недостаточно места на диске для завершения загрузки"
+  },
+  "error_filename_too_long": {
+    "message": "Слишком длинное имя файла"
+  },
+  "error_file_too_large": {
+    "message": "Файл слишком большой для файловой системы"
+  },
+  "error_virus_detected": {
+    "message": "Загрузка заблокирована антивирусом"
+  },
+  "error_transient": {
+    "message": "Временная ошибка файловой системы, пожалуйста, попробуйте снова"
+  },
+  "error_file_blocked": {
+    "message": "Файл заблокирован настройками безопасности"
+  },
+  "error_security_check": {
+    "message": "Проверка безопасности файла не пройдена"
+  },
+  "error_file_too_short": {
+    "message": "Загруженный файл неполный"
+  },
+  "error_hash_mismatch": {
+    "message": "Ошибка проверки целостности файла"
+  },
+  "error_same_as_source": {
+    "message": "Файл уже существует в месте назначения"
+  },
+  "error_network": {
+    "message": "Произошла сетевая ошибка при загрузке"
+  },
+  "error_server": {
+    "message": "Произошла ошибка сервера при загрузке"
+  },
+  "error_user_canceled": {
+    "message": "Загрузка отменена пользователем"
+  },
+  "error_user_shutdown": {
+    "message": "Загрузка прервана из-за закрытия браузера"
+  },
+  "error_crash": {
+    "message": "Произошла системная ошибка при загрузке"
+  },
+  "error_unknown": {
+    "message": "Ошибка загрузки"
+  },
+  "experements_label": {
+    "message": "Эксперименты"
+  },
+  "experements_help": {
+    "message": "Включает экспериментальные функции (не включайте, если не знаете, что это)"
+  },
+  "download_lossless_trial_limit_reached": {
+    "message": "Лимит пробных загрузок в Lossless качестве исчерпан, обновите до Премиум или скачивайте в MP3 качестве"
+  },
+  "download_logs_title": {
+    "message": "Скачать логи загрузок"
+  },
+  "cover_size_label": {
+    "message": "Размер обложки"
+  },
+  "download_multi_settings": {
+    "message": "Настройки множественной загрузки"
+  },
+  "download_from_index": {
+    "message": "С:"
+  },
+  "download_to_index": {
+    "message": "По:"
+  },
+  "index_controls_description": {
+    "message": "Диапазон треков для загрузки:"
+  },
+  "error_parsing_log": {
+    "message": "Ошибка чтения файла логов. Проверьте формат файла."
+  },
+  "error_reading_file": {
+    "message": "Ошибка чтения файла. Попробуйте еще раз."
+  },
+  "download_log_description": {
+    "message": "Загрузите ранее сохраненные логи для продолжения загрузки незавершенных треков."
+  },
+  "select_log_file": {
+    "message": "Выбрать файл логов"
+  },
+  "import_and_download": {
+    "message": "Загрузить с выбранными настройками"
+  },
+  "no_complete_items": {
+    "message": "В файле логов не найдено завершенных загрузок"
+  },
+  "track_removed_from_yandex_music": {
+    "message": "Трек удален из Яндекс Музыки"
+  },
+  "track_uploaded_by_user": {
+    "message": "Трек загружен пользователем - не поддерживается для скачивания сейчас"
+  },
+  "complete_items_found": {
+    "message": "Найдено $COUNT$ завершенных загрузок.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "stop_popup_title": {
+    "message": "Остановить очередь загрузок"
+  },
+  "stopping_popup_title": {
+    "message": "Остановка..."
+  },
+  "buildDownloadLogBtn": {
+    "message": "Собрать логи загрузок для продолжения скачивания незавершенных треков"
+  },
+  "clearLogsConfirmation": {
+    "message": "Вы уверены, что хотите очистить журнал загрузок?"
+  },
+  "premium_yearly_plan": {
+    "message": "Годовой план"
+  },
+  "premium_lifetime_plan": {
+    "message": "Пожизненный план"
+  },
+  "premium_get_yearly_plan": {
+    "message": "Получить годовой план"
+  },
+  "premium_get_lifetime_access": {
+    "message": "Получить пожизненный доступ"
+  },
+  "premium_active": {
+    "message": "АКТИВЕН"
+  },
+  "premium_enter_secret_key": {
+    "message": "Пожалуйста, введите секретный ключ."
+  },
+  "premium_error_activating": {
+    "message": "Ошибка активации премиум. Пожалуйста, попробуйте еще раз."
+  },
+  "premium_lifetime_activated": {
+    "message": "Пожизненный план успешно активирован!"
+  },
+  "premium_initialization_error": {
+    "message": "Ошибка инициализации страницы премиум. Пожалуйста, попробуйте позже."
+  },
+  "premium_critical_error": {
+    "message": "Не удалось инициализировать страницу премиум. Пожалуйста, попробуйте позже."
+  },
+  "premium_trial_remaining": {
+    "message": "Скачивание в Lossless - осталось $COUNT$ загрузок",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "premium_trial_original": {
+    "message": "Скачивание в Lossless - Попробуйте 20 бесплатно"
+  },
+  "premium_free_plan_name": {
+    "message": "Меломан"
+  },
+  "premium_free_plan_title": {
+    "message": "Бесплатный"
+  },
+  "premium_free_plan_subtitle": {
+    "message": "Навсегда"
+  },
+  "premium_free_plan_features": {
+    "message": "✅ Скачивание MP3 - Безлимитно<br>⏳ Скачивание в Lossless - Попробуйте 20 бесплатно"
+  },
+  "premium_yearly_plan_name": {
+    "message": "Душа вечеринки"
+  },
+  "premium_yearly_plan_price": {
+    "message": "1000 РУБ"
+  },
+  "premium_yearly_plan_subtitle": {
+    "message": "В год"
+  },
+  "premium_yearly_plan_features": {
+    "message": "✅ MP3 - Безлимитно<br>✅ Скачивание в Lossless - Безлимитно<br>✅ Приоритетная поддержка и доступ к новым функциям"
+  },
+  "premium_lifetime_plan_name": {
+    "message": "Диджей"
+  },
+  "premium_lifetime_plan_price": {
+    "message": "1990 РУБ"
+  },
+  "premium_lifetime_plan_subtitle": {
+    "message": "Пожизненно"
+  },
+  "premium_lifetime_plan_features": {
+    "message": "✅ MP3 - Безлимитно<br>Lossless - Безлимитно<br>✅ Приоритетная поддержка и доступ к новым функциям<br>✅ Оплатите один раз - используйте навсегда"
+  },
+  "premium_close_notification": {
+    "message": "Закрыть уведомление"
+  }
+}

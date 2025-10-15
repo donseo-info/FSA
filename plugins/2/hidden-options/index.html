@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Yandex Music Downloader Advanced Settings</title>
+  <link rel="stylesheet" href="../options/styles.css">
+</head>
+
+<body>
+  <div class="container">
+    <h1 loc="hidden_settings_header">Advanced Settings</h1>
+
+    <form id="hiddenSettingsForm">
+      <div class="form-group">
+        <label class="checkbox" for="experements">
+          <input type="checkbox" id="experements">
+          <span loc="experements_label">Experiments</span>
+        </label>
+        <p class="help-text" loc="experements_help">
+          When enabled, the extension will try to use custom local key for Yandex Music API.
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label for="maxErrorsInRow">
+          <span loc="max_errors_in_row_label">Maximum Errors In Row</span>
+        </label>
+        <input type="number" id="maxErrorsInRow" min="1" max="10">
+        <p class="help-text" loc="max_errors_in_row_help">
+          Maximum number of download errors in a row before stopping the download process.
+        </p>
+      </div>
+
+      <button type="submit" class="btn-primary" loc="save_settings_button">Save Settings</button>
+    </form>
+
+    <div id="savedMessage" class="message success hidden" loc="settings_saved_message">
+      Settings saved successfully!
+    </div>
+  </div>
+  <script src="../hidden-options.js"></script>
+</body>
+
+</html> 

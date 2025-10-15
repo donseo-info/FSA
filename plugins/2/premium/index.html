@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yandex Music Downloader Premium</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <!-- Fixed Status Card - Top Left Corner -->
+  <div class="status-card-fixed">
+    <div id="downloadsBadge" class="downloads-badge" loc-title="premium_downloads_badge_title" title="Premium downloads">0</div>
+    <div class="premium-status">
+      <h3 loc="premium_status_label">Current Plan</h3>
+      <div class="status-badge" id="statusBadge" role="status" aria-live="polite">
+        <span id="statusText" loc="premium_free_plan_name">Meloman</span>
+      </div>
+      <div class="user-email" id="userEmail"></div>
+      <div class="user-expire-date" id="userExpireDate"></div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1 loc="premium_page_title">Premium Features Access</h1>
+    
+    <!-- Simplified cards layout -->
+    <div class="plans-container">
+      <!-- Free Plan Card -->
+      <div class="plan-card" data-plan="free">
+        <div class="plan-image">
+          <img src="img/light.jpg" alt="Free Plan" class="plan-img">
+        </div>
+        <div class="plan-header">
+          <p class="price-title" loc="premium_free_plan_name">Меломан</p>
+          <h3 loc="premium_free_plan_title">Free</h3>
+          <p class="price-subtitle" loc="premium_free_plan_subtitle">Forever</p>
+        </div>
+        <div class="plan-features" loc="premium_free_plan_features" loc-html="true">
+          Download MP3 - Unlimited<br>
+          Download Lossless - Try 20 for Free
+        </div>
+      </div>
+
+      <!-- Yearly Plan Card -->
+      <div class="plan-card" data-plan="yearly">
+        <div class="plan-image">
+          <img src="img/pro.jpg" alt="Yearly Plan" class="plan-img">
+        </div>
+        <div class="plan-header">
+          <p class="price-title" loc="premium_yearly_plan_name">Душа компании</p>
+          <h3 loc="premium_yearly_plan_price">1000 RUB</h3>
+          <p class="price-subtitle" loc="premium_yearly_plan_subtitle">Per Year</p>
+        </div>
+        <div class="plan-features" loc="premium_yearly_plan_features" loc-html="true">
+          Download MP3 - Unlimited<br>
+          Download Lossless - Unlimited<br>
+          Priority Support and Access to new Features
+        </div>
+        <div class="plan-action" data-plan="yearly">
+          <span>Get Yearly Plan</span>
+        </div>
+      </div>
+
+      <!-- Lifetime Plan Card -->
+      <div class="plan-card" data-plan="lifetime">
+        <div class="plan-image">
+          <img src="img/dj.jpg" alt="Lifetime Plan" class="plan-img">
+        </div>
+        <div class="plan-header">
+          <p class="price-title" loc="premium_lifetime_plan_name">Диджей</p>
+          <h3 loc="premium_lifetime_plan_price">1990 RUB</h3>
+          <p class="price-subtitle" loc="premium_lifetime_plan_subtitle">Lifetime</p>
+          <div class="ribbon"><span loc="premium_recommended">Best Value</span></div>
+        </div>
+        <div class="plan-features" loc="premium_lifetime_plan_features" loc-html="true">
+          Download MP3 - Unlimited<br>
+          Download Lossless - Unlimited<br>
+          Priority Support and Access to new Features<br>
+          Pay once - use forever
+        </div>
+        <div class="plan-action" data-plan="lifetime">
+          <span>Get Lifetime Access</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add redirect notification element -->
+    <div id="redirectNotification" class="redirect-notification hidden">
+      <div class="notification-content">
+        <div class="notification-icon">↓</div>
+        <div class="notification-message" loc="premium_redirect_message">You need a Premium plan to download more Lossless tracks after your trial expires.</div>
+        <button class="notification-close" aria-label="Close notification" loc-aria-label="premium_close_notification">×</button>
+      </div>
+    </div>
+
+    <form id="premiumForm" class="premium-activation">
+      <div class="form-group">
+        <label for="secretKey" loc="premium_key_label">Enter Secret Key</label>
+        <input type="text" id="secretKey" class="form-control" loc-placeholder="premium_key_placeholder" 
+          aria-required="true" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <small class="key-instructions" loc="premium_key_instructions">Enter the key you received after making a donation</small>
+      </div>
+
+      <button type="submit" class="btn-primary" loc="premium_activate_button">Apply Key</button>
+      <div id="loadingIndicator" class="loading-indicator hidden" aria-hidden="true">
+        <div class="spinner" aria-label="Loading"></div>
+        <span loc="validating_key">Validating key...</span>
+      </div>
+    </form>
+
+    <div id="errorMessage" class="message error hidden" loc="premium_key_invalid" role="alert" aria-hidden="true">
+      Invalid key. Please try again.
+    </div>
+
+    <div id="successMessage" class="message success hidden" loc="premium_key_valid" role="alert" aria-hidden="true">
+      Premium activated successfully!
+    </div>
+  </div>
+  
+  <!-- Donate Consent Overlay -->
+  <div id="donateConsentOverlay" class="overlay hidden">
+    <div class="overlay-content">
+      <span class="close-overlay">&times;</span>
+      <h2 loc="premium_how_to_get">How to get Premium access?</h2>
+      <div class="consent-content-wrapper">
+        <div class="consent-text" loc="premium_consent_text" loc-html="true">
+          <img src="img/filltips.gif" alt="How to fill donation form" class="tips-gif">
+          &gt; Make a donation of any amount over 1000 Russian rubles<br>
+          &gt; In the "Private Message" field, ALWAYS include your email<br>
+          &gt; After payment, a secret key for activation will be sent to the specified email<br>
+          &gt; Enter it on this page and enjoy new features with Yandex Music Downloader v3!<br><br>
+          
+          <b>Questions:</b><br>
+          Is this a monthly subscription?<br>
+          &gt; No, this is not a subscription in the classic sense. This is a one-time BIG thank you for our work, in exchange for which we give you a lifetime key for premium features!<br><br>
+          
+          What if I lost the key \ didn't receive an email notification \ other reasons?<br>
+          &gt; Write to us at support (dreambuilder.first@gmail.com) with your payment receipt data or any other data to identify you.<br><br>
+          
+          What if the application stops working after some time, and I've already paid?<br>
+          &gt; Given that we are an unofficial Yandex application and depend on their API - problems occasionally arise, which we try to solve IMMEDIATELY. Nevertheless, there is of course a risk of breakdowns, so when making a donation - please confirm that you are doing this voluntarily and not with your last money (otherwise use MP3 downloading completely free).
+        </div>
+      </div>
+      
+      <div class="consent-checkbox-container">
+        <label class="consent-checkbox-label">
+          <input type="checkbox" id="consentCheckbox">
+          <span loc="premium_agree_terms">I agree with the terms of use</span>
+        </label>
+      </div>
+      
+      <div class="overlay-buttons">
+        <button id="proceedToDonateButton" class="btn-primary" disabled loc="premium_proceed_donate">Proceed to Donation</button>
+      </div>
+    </div>
+  </div>
+  
+  <script src="../premium.js"></script>
+</body>
+
+</html> 

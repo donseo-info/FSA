@@ -1,0 +1,195 @@
+:root {
+  --primary-color: #ffdb4d;
+  --text-color: #000;
+  --background-color: #fff;
+  --border-color: #e5e5e5;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  /* margin: 0; */
+  /* padding: 20px; */
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.container {
+  max-width: 800px;
+  /* margin: 0 auto; */
+  padding: 0 20px 10px;
+}
+
+h1 {
+  margin: 10px 0;
+  font-weight: 500;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.form-control {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.help-text {
+  display: block;
+  margin: 4px 0;
+  color: #666;
+  font-size: 12px;
+}
+
+.preview {
+  margin-top: 8px;
+  padding: 8px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox input {
+  margin: 0;
+}
+
+.checkbox label {
+  margin: 0;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #ffd633;
+}
+
+.message {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 12px 24px;
+  border-radius: 4px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.success {
+  background-color: #4caf50;
+  color: white;
+}
+
+.hidden {
+  display: none;
+}
+
+input#downloadLossless {
+  margin: 0;
+}
+
+.info-badge {
+  font-size: 10px;
+  color: #666;
+  border: 1px solid #ffdb4d;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+  cursor: help;
+}
+
+.donate-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.donate-badge:hover {
+  transform: scale(1.2);
+}
+
+.donate-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Hidden link styles */
+.hidden-link {
+  display: none;
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.hidden-advanced-link {
+  color: transparent;
+  font-size: 10px;
+  text-decoration: none;
+  opacity: 0.1;
+  transition: all 0.3s ease;
+}
+
+.hidden-advanced-link:hover {
+  opacity: 0.3;
+}
+
+/* Show link when "ctrl+alt+a" is pressed */
+.show-advanced-link.hidden-link {
+  display: block;
+}
+
+.show-advanced-link .hidden-advanced-link {
+  color: #666;
+  opacity: 1;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+form#settingsForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-control-narrow {
+  width: fit-content;
+}
+
+.form-group.select {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.form-group.select label {
+  margin: 0;
+}

@@ -1,0 +1,30 @@
+/* Rating */
+
+.rating-control {
+    unicode-bidi: bidi-override;
+    font-size: 16px;
+    line-height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+}
+
+.rating-control .star {
+    color: #ccc;
+    cursor: pointer;
+    display: inline-block;
+    width: 14px;
+}
+
+.rating-control .star.active {
+    color: #0a66c2;
+}
+
+body.night .rating-control .star {
+    color: #4a4a4a;
+}
+
+body.night .rating-control .star.active {
+    color: #3498db;
+}

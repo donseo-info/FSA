@@ -1,0 +1,522 @@
+{
+  "appName": {
+    "message": "Yandex Music Downloader V3"
+  },
+  "shortDesc": {
+    "message": "Ultimate MP3 downloader of your favorite songs from Yandex.Music! New Design + Lossless quality 👉 listen your music offline!"
+  },
+  "download_current": {
+    "message": "Download current track"
+  },
+  "download_mult": {
+    "message": "Download All"
+  },
+  "progress_prefix": {
+    "message": "Downloading"
+  },
+  "progress_prefix_done": {
+    "message": "Downloaded"
+  },
+  "loadingMsg": {
+    "message": "Loading..."
+  },
+  "reaction_bad": {
+    "message": "Leave feedback | Ask for help"
+  },
+  "reaction_good": {
+    "message": "Share feedback"
+  },
+  "folder_open": {
+    "message": "Download folder"
+  },
+  "folder_open_title": {
+    "message": "Open Download folder"
+  },
+  "tips": {
+    "message": "Buy coffee"
+  },
+  "tips_title": {
+    "message": "Tips for coffee"
+  },
+  "skip_popup": {
+    "message": "Don`t show"
+  },
+  "skip_popup_title": {
+    "message": "Do not show the progress window.\nYou can turn it back on the settings page."
+  },
+  "progress_close": {
+    "message": "Close"
+  },
+  "popup_status": {
+    "message": "Status"
+  },
+  "popup_name": {
+    "message": "Name"
+  },
+  "popup_time_lift": {
+    "message": "Time left"
+  },
+  "download_speed": {
+    "message": "Speed"
+  },
+  "popup_rate_us": {
+    "message": "Rate us"
+  },
+  "popup_support": {
+    "message": "Support"
+  },
+  "options_title": {
+    "message": "Open app options"
+  },
+  "email_copied": {
+    "message": "Email copied!"
+  },
+  "popup_support_title": {
+    "message": "Email to dreambuilder.first@gmail.com (click to copy to clipboard)"
+  },
+  "errors_text": {
+    "message": "Errors"
+  },
+  "errors_title": {
+    "message": "Failed to download all tracks, you can check System Logs for more details"
+  },
+  "stop_all_title": {
+    "message": "Stop all downloads in queue"
+  },
+  "continue_all_title": {
+    "message": "Continue all downloads in queue"
+  },
+  "clear_all_title": {
+    "message": "Clear download queue"
+  },
+  "settings_header": {
+    "message": "Settings"
+  },
+  "filename_format_label": {
+    "message": "Filename Format"
+  },
+  "available_variables_text": {
+    "message": "Available variables: {title}, {version}, {artist}, {artists}, {album}, {tracknumber}, {trackindex}"
+  },
+  "preview_label": {
+    "message": "Preview:"
+  },
+  "download_albums_label": {
+    "message": "Download albums to separate folders"
+  },
+  "download_artists_label": {
+    "message": "Download artists to separate folders"
+  },
+  "download_playlists_label": {
+    "message": "Download playlists to separate folders"
+  },
+  "show_progress_popup_label": {
+    "message": "Show Progress Popup"
+  },
+  "save_settings_button": {
+    "message": "Save Settings"
+  },
+  "settings_saved_message": {
+    "message": "Settings saved successfully!"
+  },
+  "new_design_warning_title": {
+    "message": "New design is not supported"
+  },
+  "new_design_warning_text": {
+    "message": "The app does not support the new design yet. Please switch back to the old design to continue downloading music."
+  },
+  "logPageName": {
+    "message": "System Logs"
+  },
+  "downloadLogsTitle": {
+    "message": "System Logs"
+  },
+  "totalLogsLabel": {
+    "message": "Total Logs"
+  },
+  "errorLogsLabel": {
+    "message": "Error Logs"
+  },
+  "filterPlaceholder": {
+    "message": "Filter logs..."
+  },
+  "removedFromYMTracksBtn": {
+    "message": "Removed from YM Tracks"
+  },
+  "uploadedByUserTracksBtn": {
+    "message": "Uploaded by user tracks"
+  },
+  "clearLogsBtn": {
+    "message": "Clear Logs"
+  },
+  "exportLogsBtn": {
+    "message": "Export Logs"
+  },
+  "noLogsAvailable": {
+    "message": "No logs available."
+  },
+  "logsCleared": {
+    "message": "Logs cleared."
+  },
+  "noLogsToExport": {
+    "message": "No logs to export."
+  },
+  "textFilterTitle": {
+    "message": "Text Filter"
+  },
+  "clearFiltersBtn": {
+    "message": "Clear filter"
+  },
+  "try_this_app": {
+    "message": "Learn more"
+  },
+  "show_next_app": {
+    "message": "Next app"
+  },
+  "show_promos": {
+    "message": "More apps"
+  },
+  "hide_promos": {
+    "message": "Hide"
+  },
+  "options_download_lossless": {
+    "message": "Download in Premium quality"
+  },
+  "options_download_lossless_help": {
+    "message": "FLAC > AAC > HE-AAC > MP3 - the extension will try to download files in the best quality (LOSSLESS).<br> - Available only for <u>Yandex Plus</u> users."
+  },
+  "download_lossless_btn": {
+    "message": "Download Premium Quality"
+  },
+  "lossless_info_header": {
+    "message": "Lossless quality"
+  },
+  "experimental_badge": {
+    "message": "In development"
+  },
+  "experimental_badge_title": {
+    "message": "Allows to download Lossless quality if Yandex Music allows it"
+  },
+  "errorTracksBtn": {
+    "message": "Errors"
+  },
+  "lossless_quality_label": {
+    "message": "Quality"
+  },
+  "lossless_codec_label": {
+    "message": "Available format"
+  },
+  "lossless_bitrate_label": {
+    "message": "Bitrate"
+  },
+  "lossless_loading": {
+    "message": "Loading..."
+  },
+  "lossless_info_error": {
+    "message": "Could not load info"
+  },
+  "no_subscription_title": {
+    "message": "Your subscription was not found.\nPlease make sure that you: are logged into Yandex Music, have a subscription, are not in Incognito mode.\nAlso, the extension works unstable on URLs like https://next.yandex.music.** > go to the regular URL WITHOUT Next > https://yandex.music.**"
+  },
+  "no_subscription_text": {
+    "message": "No subscription found"
+  },
+  "noSpaceLeft": {
+    "message": "No space left on device (download or Chrome temporary files folder).\nPlease free up some space and try again"
+  },
+  "premium_page_title": {
+    "message": "Premium Features Access"
+  },
+  "premium_downloads_badge_title": {
+    "message": "Premium downloads"
+  },
+  "premium_status_label": {
+    "message": "Current Plan"
+  },
+  "premium_status_free": {
+    "message": "Free"
+  },
+  "premium_status_premium": {
+    "message": "Premium"
+  },
+  "premium_valid_until": {
+    "message": "Valid until"
+  },
+  "premium_status_expired": {
+    "message": "Expired"
+  },
+  "premium_expired_on": {
+    "message": "Expired on"
+  },
+  "premium_key_label": {
+    "message": "Enter Secret Key"
+  },
+  "premium_key_placeholder": {
+    "message": "Your secret key"
+  },
+  "premium_activate_button": {
+    "message": "Apply Key"
+  },
+  "premium_donate_text": {
+    "message": "Get your premium key by making a donation"
+  },
+  "premium_features_title": {
+    "message": "Premium Features"
+  },
+  "premium_features_list": {
+    "message": "✓ Download in MP3 as usual without any limits<br>✓ Download in Lossless quality (One-by-one, Trial Lossless 10 downloads)<br><br><b>Premium Plan:</b><br>✓ All from Free +<br>✓ Download in Lossless quality - <b>Unlimited downloads!</b><br>✓ Download playlists in Lossless quality!<br>✓ Priority support"
+  },
+  "premium_key_invalid": {
+    "message": "Invalid key. Please try again."
+  },
+  "premium_key_valid": {
+    "message": "Premium activated successfully!"
+  },
+  "validating_key": {
+    "message": "Validating key..."
+  },
+  "premium_features_tooltip": {
+    "message": "Premium features"
+  },
+  "premium_key_instructions": {
+    "message": "Click the 'Get Access' button and enter the key you received after making a donation"
+  },
+  "premium_permission_required": {
+    "message": "Permission required: We need permission to verify your premium key. Please allow access when prompted."
+  },
+  "premium_lossless_count": {
+    "message": "Your Lossless downloads: <b>0</b>"
+  },
+  "premium_recommended": {
+    "message": "Recommended"
+  },
+  "premium_premium_plan_title": {
+    "message": "Premium Plan"
+  },
+  "premium_premium_plan_features": {
+    "message": "✓ Download in MP3 as usual without any limits<br>✓ Download in Lossless quality - <b>Unlimited downloads!</b><br>✓ Download <b>playlists</b> in Lossless quality!<br>✓ Priority support and access to new features"
+  },
+  "premium_get_plan": {
+    "message": "I want Premium"
+  },
+  "premium_how_to_get": {
+    "message": "How to get Premium access?"
+  },
+  "app_version": {
+    "message": "App version"
+  },
+  "premium_consent_text": {
+    "message": "<img src='img/filltips.gif' alt='How to fill donation form' class='tips-gif'><b>🎯 How to get Premium:</b><br>1️⃣ Make a donation of any amount greater than the selected plan (Example: 1010 RUB = access for a year, 1991 = lifetime access)<br>2️⃣ In the 'Private comment' field <b><u>MANDATORY</u> specify your email</b><br><br>👉 After payment, a secret activation key will be sent to the specified email<br>👉 Enter it on this page and enjoy the full capabilities of Yandex Music Downloader v3!<br><br><hr>❓ <b>Frequently asked questions:</b><br>What if I lost the key \\ didn't receive a notification by email \\ can't pay?<br>→ 📧 Write to us in support (dreambuilder.first@gmail.com) - we will find a way out of the situation individually!<br><br>What if the application stops working after some time, and I have already paid?<br>→ ⚠️ Considering that we are an unofficial Yandex application and depend on their API, problems periodically arise that we try to solve INSTANTLY.<br>→ Nevertheless, the risk of breakdowns, of course, exists, therefore, when making a donation, confirm that you are doing it voluntarily and not with your last money (otherwise, use MP3 downloading completely free of charge)."
+  },
+  "premium_agree_terms": {
+    "message": "I agree with the terms of use"
+  },
+  "premium_proceed_donate": {
+    "message": "Proceed to Donation"
+  },
+  "premium_redirect_message": {
+    "message": "You successfully downloaded 20 Lossless tracks!. Activate Premium plan and continue downloading Lossless without limits!"
+  },
+  "error_access_denied": {
+    "message": "Access denied while saving the file"
+  },
+  "error_no_space": {
+    "message": "Not enough disk space to complete the download"
+  },
+  "error_filename_too_long": {
+    "message": "The filename is too long for the file system"
+  },
+  "error_file_too_large": {
+    "message": "The file is too large for the file system"
+  },
+  "error_virus_detected": {
+    "message": "The download was blocked by the virus scanner"
+  },
+  "error_transient": {
+    "message": "Temporary file system error, please try again"
+  },
+  "error_file_blocked": {
+    "message": "File was blocked by security settings"
+  },
+  "error_security_check": {
+    "message": "File security check failed"
+  },
+  "error_file_too_short": {
+    "message": "Downloaded file is incomplete"
+  },
+  "error_hash_mismatch": {
+    "message": "File integrity check failed"
+  },
+  "error_same_as_source": {
+    "message": "File already exists at destination"
+  },
+  "error_network": {
+    "message": "Network error occurred during download"
+  },
+  "error_server": {
+    "message": "Server error occurred during download"
+  },
+  "error_user_canceled": {
+    "message": "Download was canceled by the user"
+  },
+  "error_user_shutdown": {
+    "message": "Download interrupted by browser shutdown"
+  },
+  "error_crash": {
+    "message": "System error occurred during download"
+  },
+  "error_unknown": {
+    "message": "Download failed"
+  },
+  "experements_label": {
+    "message": "Experiments"
+  },
+  "experements_help": {
+    "message": "Enables experimental features (do not enable if you don't know what it is)"
+  },
+  "download_lossless_trial_limit_reached": {
+    "message": "Trial Lossless limit reached, please upgrade to Premium or download in MP3 format"
+  },
+  "download_logs_title": {
+    "message": "Save download logs to file"
+  },
+  "cover_size_label": {
+    "message": "Cover Size"
+  },
+  "download_multi_settings": {
+    "message": "Download Multi Settings"
+  },
+  "download_from_index": {
+    "message": "From:"
+  },
+  "download_to_index": {
+    "message": "To:"
+  },
+  "index_controls_description": {
+    "message": "Range of tracks to download:"
+  },
+  "error_parsing_log": {
+    "message": "Error parsing log file. Please check the file format."
+  },
+  "error_reading_file": {
+    "message": "Error reading file. Please try again."
+  },
+  "download_log_description": {
+    "message": "Upload previously downloaded logs to continue downloading incomplete tracks."
+  },
+  "select_log_file": {
+    "message": "Select Log File"
+  },
+  "import_and_download": {
+    "message": "Download with selected settings"
+  },
+  "no_complete_items": {
+    "message": "No complete downloads found in log file"
+  },
+  "track_removed_from_yandex_music": {
+    "message": "Track is removed from Yandex Music"
+  },
+  "track_uploaded_by_user": {
+    "message": "Track is uploaded by user - not supported for download now"
+  },
+  "complete_items_found": {
+    "message": "Found $COUNT$ complete download(s).",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "stop_popup_title": {
+    "message": "Stop download queue"
+  },
+  "stopping_popup_title": {
+    "message": "Stopping..."
+  },
+  "buildDownloadLogBtn": {
+    "message": "Build Download Log to continue downloading incomplete tracks"
+  },
+  "clearLogsConfirmation": {
+    "message": "Are you sure you want to clear the logs?"
+  },
+  "premium_yearly_plan": {
+    "message": "Yearly Plan"
+  },
+  "premium_lifetime_plan": {
+    "message": "Lifetime Plan"
+  },
+  "premium_get_yearly_plan": {
+    "message": "Get Yearly Plan"
+  },
+  "premium_get_lifetime_access": {
+    "message": "Get Lifetime Access"
+  },
+  "premium_active": {
+    "message": "ACTIVE"
+  },
+  "premium_enter_secret_key": {
+    "message": "Please enter a secret key."
+  },
+  "premium_error_activating": {
+    "message": "Error activating premium. Please try again."
+  },
+  "premium_lifetime_activated": {
+    "message": "Lifetime plan activated successfully!"
+  },
+  "premium_initialization_error": {
+    "message": "Error initializing premium page. Please try again later."
+  },
+  "premium_critical_error": {
+    "message": "Failed to initialize premium page. Please try again later."
+  },
+  "premium_trial_remaining": {
+    "message": "Download Lossless - $COUNT$ downloads remaining",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "premium_trial_original": {
+    "message": "Download Lossless - Try 20 for Free"
+  },
+  "premium_free_plan_name": {
+    "message": "Meloman"
+  },
+  "premium_free_plan_title": {
+    "message": "Free"
+  },
+  "premium_free_plan_subtitle": {
+    "message": "Forever"
+  },
+  "premium_free_plan_features": {
+    "message": "✅ Download MP3 - Unlimited<br>⏳ Download Lossless - Try 20 for Free"
+  },
+  "premium_yearly_plan_name": {
+    "message": "Soul of the Party"
+  },
+  "premium_yearly_plan_price": {
+    "message": "1000 RUB"
+  },
+  "premium_yearly_plan_subtitle": {
+    "message": "Per Year"
+  },
+  "premium_yearly_plan_features": {
+    "message": "✅ MP3 - Unlimited<br>✅ Lossless - Unlimited<br>✅ Priority Support and Access to new Features"
+  },
+  "premium_lifetime_plan_name": {
+    "message": "DJ"
+  },
+  "premium_lifetime_plan_price": {
+    "message": "1990 RUB"
+  },
+  "premium_lifetime_plan_subtitle": {
+    "message": "Lifetime"
+  },
+  "premium_lifetime_plan_features": {
+    "message": "✅ MP3 - Unlimited<br>✅ Lossless - Unlimited<br>✅ Priority Support and Access to new Features<br>Pay once - use forever"
+  },
+  "premium_close_notification": {
+    "message": "Close notification"
+  }
+}

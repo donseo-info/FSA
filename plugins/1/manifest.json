@@ -1,0 +1,78 @@
+{
+"update_url": "https://clients2.google.com/service/update2/crx",
+
+  "version": "4.1.0",
+  "name": "Яндекс.Музыка - управление плеером",
+  "description": "Расширение добавляет на панель браузера кнопку для управления плеером сервиса Яндекс.Музыка (Yandex.Music)",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "popup/index.html",
+    "default_title": "Popup",
+    "default_icon": "assets/icon_38_2_na.png"
+  },
+  "icons": {
+    "16": "assets/icon_16.png",
+    "48": "assets/icon_48.png",
+    "128": "assets/icon_128.png"
+  },
+  "background": {
+    "service_worker": "background/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://music.yandex.ru/*",
+        "https://music.yandex.ua/*",
+        "https://music.yandex.by/*",
+        "https://music.yandex.kz/*"
+      ],
+      "js": [
+        "content/content.js"
+      ],
+      "run_at" : "document_start"
+    }
+  ],
+  "commands": {
+    "player_next": {"description": "Следующий трек", "global": true, "suggested_key": {"default": "MediaNextTrack"}},
+    "player_play": {"description": "Воспроизведение/пауза", "global": true, "suggested_key": {"default": "MediaPlayPause"}},
+    "player_prev": {"description": "Предыдущий трек", "global": true, "suggested_key": {"default": "MediaPrevTrack"}},
+    "player_info": {"description": "Информация о текущем треке"},
+    "player_like": {"description": "Мне нравится"},
+    "player_dislike": {"description": "Не нравится/не рекомендовать"},
+    "player_volume_up": {"description": "Увеличить громкость"},
+    "player_volume_toggle": {"description": "Выключить/включить звук"},
+    "player_volume_down": {"description": "Уменьшить громкость"},
+    "player_shuffle": {"description": "Переключить режим случайного проигрывания"},
+    "player_repeat": {"description": "Переключить режим повтора"},
+    "player_seek_fwd": {"description": "Перемотать вперед на 10сек"},
+    "player_seek_back": {"description": "Перемотать назад на 10сек"},
+    "player_focus": {"description": "Активировать вкладку с Я.Музыкой"}
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "content/*.js",
+        "common/*.js"
+      ],
+      "matches": [
+        "https://music.yandex.ru/*",
+        "https://music.yandex.ua/*",
+        "https://music.yandex.by/*",
+        "https://music.yandex.kz/*"
+      ]
+    }
+  ],
+  "permissions": [
+    "storage", "notifications"
+  ],
+  "optional_permissions": ["downloads", "downloads.shelf"],
+  "host_permissions": [
+    "https://music.yandex.ru/",
+    "https://music.yandex.ua/",
+    "https://music.yandex.by/",
+    "https://music.yandex.kz/"
+  ],
+  "options_page": "options/index.html",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAihkheK/qLPv8ReD/3zhaBJ0g4QJopIqN5sAhXz+47wNDvOpmWW9MOiV0nHR5JXrto/TJ77pNKiSbF8SgHJmguJ7jKmtWqzSr6WYDcJBrr6dabQ96HN5fdDC94FFxEdtyiCEKOHVKGc8IYg9G3jw5GZKnwhGt08oSYgWZktxmQPktpf79dlFGv5Hx9iN89/fmAYkLHtRgAbjDYZ46DvaRDCedfkS05p33a0QxG+Xok3f2hsszxN/9rbBOMvdbL+FaOlOJ0sbk7ypHdTbGYyzUhPSwwOU3rxPRmtxLDCN3WWT2nvYm0YpzSi5CeRYids9XJYhOcbkWms7QPAXzy08DlwIDAQAB"
+}
