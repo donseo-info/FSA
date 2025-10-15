@@ -1,6 +1,6 @@
-# FSA Document Parser
+# Document Parser
 
-Система для автоматического парсинга документов с сайта Росстандарта (pub.fsa.gov.ru).
+Система для автоматического парсинга документов
 
 ## Описание
 
@@ -36,10 +36,10 @@ npm install
 node parser.js bot-111806668
 
 # С указанием количества дней
-node parser.js bot-111806668 --days=30
+node parser.js bot-111806668 --days=
 
 # С прокси
-node parser.js bot-111806668 --proxy --days=7
+node parser.js bot-111806668 --proxy --days=
 ```
 
 ### 2. Массовая обработка документов
@@ -49,7 +49,7 @@ node batch_parser.js
 
 ### 3. Парсинг конкретных документов
 ```bash
-node document_parser_batch.js bot-111806668 "20627515,20624535,20574634" --proxy
+node document_parser_batch bot-111806668 "20627515,20624535,20574634" --proxy
 ```
 
 ## Структура проекта
@@ -73,17 +73,6 @@ node document_parser_batch.js bot-111806668 "20627515,20624535,20574634" --proxy
 └── logs/                        # Логи и результаты парсинга
 ```
 
-## Настройка
-
-### Профили браузера
-Профили создаются автоматически в папке `profiles/` с именами вида `bot-XXXXXXXXX`.
-
-### Прокси
-Настройки прокси указываются в файле `proxies.txt` в формате:
-```
-socks5://user:pass@host:port
-```
-
 ### База данных
 База данных SQLite создается автоматически при первом запуске через `install_documents_db.php`.
 
@@ -100,12 +89,6 @@ socks5://user:pass@host:port
 - `POST /api.php?action=ok&id=ID` - отметить ID как обработанный
 - `GET /api.php?action=stats` - статистика обработки
 - `POST /documents_gate_simple.php` - сохранение данных документа
-
-## Зависимости
-
-- `playwright` - управление браузером
-- `node-fetch` - HTTP запросы
-- `socks-proxy-agent` - работа с SOCKS5 прокси
 
 ## Лицензия
 
