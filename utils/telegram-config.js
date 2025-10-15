@@ -10,7 +10,7 @@
 
 export const telegramConfig = {
   // Токен вашего Telegram бота (получить у @BotFather)
-  botToken: '7977683484:AAEkRwL6kJEGXuBjXtDXi-gs34dtjY60yIQ',
+  botToken: '7977683484:AAEkRwL6kJEGXuBjXtDXi-gs34dtjY60yIQ!',
   
   // ID чата для отправки уведомлений (ваш личный ID или ID группы)
   chatId: '391991269',
