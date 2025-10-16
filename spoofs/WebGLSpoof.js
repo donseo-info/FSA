@@ -215,7 +215,7 @@ class WebGLSpoof {
       ? this.gpu.renderer.match(/ANGLE \(.*?, (.*?) Direct3D/)?.[1] || this.gpu.renderer
       : this.gpu.renderer;
     
-    console.log(`🎮 WebGL: ${shortName}`);
+    // WebGL spoof applied
   }
 }
 

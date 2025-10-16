@@ -74,7 +74,7 @@ class LanguageSpoof {
       'Accept-Language': this.acceptLanguage
     });
     
-    console.log(`🗣️ Language: ${this.locale}`);
+    // Language spoof applied
   }
 }
 

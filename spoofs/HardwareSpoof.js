@@ -56,7 +56,7 @@ class HardwareSpoof {
    */
   async apply(page) {
     await page.addInitScript(this.getInjectionCode());
-    console.log(`💻 Hardware: ${this.cores} cores, ${this.memory} GB`);
+    // Hardware spoof applied
   }
 }
 

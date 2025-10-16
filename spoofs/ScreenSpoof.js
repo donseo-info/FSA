@@ -54,7 +54,7 @@ class ScreenSpoof {
   async apply(page) {
     await page.addInitScript(this.getInjectionCode());
     await page.setViewportSize(this.resolution);
-    console.log(`📐 Screen: ${this.resolution.width}x${this.resolution.height}`);
+    // Screen spoof applied
   }
 }
 

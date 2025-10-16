@@ -111,44 +111,44 @@ class BrowserController {
       // Блокируем chrome-extension URL
       await page.route('chrome-extension://**', (route) => {
         const url = route.request().url();
-        console.log(`🚫 Блокируем URL плагина: ${url}`);
+        // Блокируем URL плагина
         route.abort('blockedbyclient');
       });
       
       // Блокируем moz-extension URL (для Firefox)
       await page.route('moz-extension://**', (route) => {
         const url = route.request().url();
-        console.log(`🚫 Блокируем URL плагина: ${url}`);
+        // Блокируем URL плагина
         route.abort('blockedbyclient');
       });
       
       // Блокируем edge-extension URL (для Edge)
       await page.route('ms-browser-extension://**', (route) => {
         const url = route.request().url();
-        console.log(`🚫 Блокируем URL плагина: ${url}`);
+        // Блокируем URL плагина
         route.abort('blockedbyclient');
       });
       
       // Блокируем конкретные страницы плагинов
       await page.route('**/installed.html', (route) => {
         const url = route.request().url();
-        console.log(`🚫 Блокируем страницу установки: ${url}`);
+        // Блокируем страницу установки
         route.abort('blockedbyclient');
       });
       
       await page.route('**/welcome.html', (route) => {
         const url = route.request().url();
-        console.log(`🚫 Блокируем приветственную страницу: ${url}`);
+        // Блокируем приветственную страницу
         route.abort('blockedbyclient');
       });
       
       await page.route('**/onboarding.html', (route) => {
         const url = route.request().url();
-        console.log(`🚫 Блокируем страницу онбординга: ${url}`);
+        // Блокируем страницу онбординга
         route.abort('blockedbyclient');
       });
       
-      console.log('🚫 Блокировка URL плагинов настроена');
+      // Блокировка URL плагинов настроена
     } catch (error) {
       console.log(`⚠️ Ошибка настройки блокировки плагинов: ${error.message}`);
     }
@@ -211,10 +211,7 @@ class BrowserController {
     console.log(`\n🚀 Запуск Chrome для профиля: ${this.profileName}`);
     console.log(`🖥️ Устройство: ${this.config.deviceName || 'Custom'}`);
     console.log(`📂 Chrome: ${this.chromePath}`);
-    console.log(`📐 Разрешение: ${this.config.resolution.width}x${this.config.resolution.height}`);
-    console.log(`🗣️ Язык: ${this.config.locale}`);
-    console.log(`💻 Железо: ${this.config.hardware.cores} ядер, ${this.config.hardware.memory} GB`);
-    console.log(`🎮 GPU: ${this.config.webgl.renderer}`);
+    // Конфигурация спуфов загружена
     
     if (this.proxy) {
       console.log(`🔗 Прокси: ${this.proxy.server}`);
@@ -331,24 +328,24 @@ class BrowserController {
     
     // Автоматически применяем спуфы к новым страницам
     this.context.on('page', async (page) => {
-      console.log('📄 Новая страница обнаружена');
+      // Новая страница обнаружена
       await page.waitForTimeout(100);
       
       // Проверяем, не является ли это страницей плагина
       const url = page.url();
-      console.log(`🔍 Проверяем URL новой страницы: ${url}`);
+      // Проверяем URL новой страницы
       
       if (url.includes('chrome-extension://') || url.includes('installed.html') || url.includes('welcome.html') || url.includes('onboarding.html')) {
-        console.log(`🚫 Обнаружена страница плагина, закрываем: ${url}`);
+        // Обнаружена страница плагина, закрываем
         try {
           await page.close();
-          console.log(`✅ Страница плагина успешно закрыта`);
+          // Страница плагина закрыта
           return;
         } catch (error) {
           console.log(`⚠️ Ошибка закрытия страницы плагина: ${error.message}`);
         }
       } else {
-        console.log(`✅ Обычная страница, продолжаем обработку`);
+        // Обычная страница, продолжаем обработку
       }
       
       await this.applySpoofs(page);
@@ -358,7 +355,6 @@ class BrowserController {
       
       // Применяем спуфы к новым фреймам
       page.on('frameattached', async (frame) => {
-        console.log('🖼️ Новый фрейм обнаружен');
         await this.applySpoofsToFrame(frame);
       });
     });
@@ -430,7 +426,7 @@ class BrowserController {
     try {
       // Проверяем, что фрейм не отсоединен
       if (frame.isDetached()) {
-        console.log('⚠️ Фрейм отсоединен, пропускаем применение спуфов');
+        // Фрейм отсоединен, пропускаем (нормальное поведение)
         return;
       }
       
@@ -450,16 +446,16 @@ class BrowserController {
         try {
           // Дополнительная проверка перед каждым спуфом
           if (frame.isDetached()) {
-            console.log('⚠️ Фрейм отсоединен во время применения спуфов');
+            // Фрейм отсоединен (нормальное поведение)
             break;
           }
           await frame.evaluate(spoof.getInjectionCode());
         } catch (spoofError) {
-          console.log(`⚠️ Ошибка применения спуфа ${spoof.constructor.name}: ${spoofError.message}`);
+          // Фрейм отсоединен во время применения спуфа (нормальное поведение)
         }
       }
       
-      console.log(`🖼️ Спуфы применены к фрейму: ${frameUrl}`);
+      // Спуфы применены к фрейму
     } catch (error) {
       console.log(`⚠️ Ошибка применения спуфов к фрейму: ${error.message}`);
     }

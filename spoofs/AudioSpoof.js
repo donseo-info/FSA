@@ -236,7 +236,7 @@ class AudioSpoof {
    */
   async apply(page) {
     await page.addInitScript(this.getInjectionCode());
-    console.log(`🔊 Audio: Protected (seed: ${this.seed})`);
+    // Audio spoof applied
   }
 }
 

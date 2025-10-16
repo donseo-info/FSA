@@ -139,7 +139,7 @@ class ProfileGenerator {
       name: profileName,
       ...config,
       createdAt: new Date().toISOString(),
-      lastUsed: null,
+      lastUsed: null, // Будет установлено при первом использовании в локальном формате
       cookies: {
         totalCookies: 0,
         uniqueDomains: 0,
@@ -193,8 +193,8 @@ class ProfileGenerator {
       throw new Error(`Профиль ${profileName} не найден`);
     }
     
-    // Обновляем время последнего использования
-    this.metadata.profiles[profileName].lastUsed = new Date().toISOString();
+    // Обновляем время последнего использования (в локальном часовом поясе)
+    this.metadata.profiles[profileName].lastUsed = new Date().toString();
     this.saveMetadata();
     
     return this.metadata.profiles[profileName];

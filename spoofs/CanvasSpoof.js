@@ -189,7 +189,7 @@ class CanvasSpoof {
    */
   async apply(page) {
     await page.addInitScript(this.getInjectionCode());
-    console.log(`🎨 Canvas: Protected (seed: ${this.seed})`);
+    // Canvas spoof applied
   }
 }
 

@@ -64,7 +64,6 @@ class MultiSurfer {
   async randomViewTime() {
     const viewTimeSeconds = Math.floor(Math.random() * (this.viewTimeMax - this.viewTimeMin + 1)) + this.viewTimeMin;
     const viewTimeMs = viewTimeSeconds * 1000;
-    this.writeLog(`⏱️ Просматриваем страницу ${viewTimeSeconds} секунд`, 'INFO');
     return new Promise(resolve => setTimeout(resolve, viewTimeMs));
   }
 
@@ -245,12 +244,11 @@ class MultiSurfer {
         this.writeLog(`[Вкладка ${tabIndex}] ⚠️ Сайт загружен, но может быть не полностью готов`, 'WARN');
       }
       
-      // Получаем заголовок страницы
+      // Получаем заголовок страницы (без логирования)
       try {
-        const title = await page.title();
-        this.writeLog(`[Вкладка ${tabIndex}] 📄 Заголовок: ${title}`, 'INFO');
+        await page.title();
       } catch (error) {
-        this.writeLog(`[Вкладка ${tabIndex}] ⚠️ Не удалось получить заголовок: ${error.message}`, 'WARN');
+        // Игнорируем ошибки получения заголовка
       }
 
       // Просматриваем главную страницу
@@ -259,8 +257,6 @@ class MultiSurfer {
       // Выполняем клики (только если clicksPerSite > 0)
       if (this.clicksPerSite > 0) {
         for (let i = 1; i <= this.clicksPerSite; i++) {
-          this.writeLog(`[Вкладка ${tabIndex}] --- Клик ${i}/${this.clicksPerSite} ---`, 'INFO');
-          
           // Ждем перед кликом
           await this.randomDelay();
           
@@ -272,27 +268,12 @@ class MultiSurfer {
             // Ждем загрузки новой страницы
             await page.waitForTimeout(3000);
             
-            // Получаем новый URL
-            const currentUrl = page.url();
-            this.writeLog(`[Вкладка ${tabIndex}] 📍 Текущий URL: ${currentUrl}`, 'INFO');
-            
-            // Получаем новый заголовок
-            try {
-              const newTitle = await page.title();
-              this.writeLog(`[Вкладка ${tabIndex}] 📄 Новый заголовок: ${newTitle}`, 'INFO');
-            } catch (error) {
-              this.writeLog(`[Вкладка ${tabIndex}] ⚠️ Не удалось получить заголовок: ${error.message}`, 'WARN');
-            }
-            
             // Просматриваем новую страницу
             await this.randomViewTime();
           } else {
             this.stats.failedClicks++;
-            this.writeLog(`[Вкладка ${tabIndex}] ❌ Клик ${i} не удался, продолжаем...`, 'WARN');
           }
         }
-      } else {
-        this.writeLog(`[Вкладка ${tabIndex}] 🚫 Клики отключены (clicks=0), только просмотр главной страницы`, 'INFO');
       }
       
       this.writeLog(`[Вкладка ${tabIndex}] ✅ Серфинг по ${site} завершен!`, 'SUCCESS');
@@ -338,7 +319,7 @@ class MultiSurfer {
    */
   async applySpoofsToMainPage(page, tabIndex, browserController) {
     try {
-      this.writeLog(`[Вкладка ${tabIndex}] 🔧 Применяем спуфы к основной странице...`, 'INFO');
+      // Применяем спуфы к основной странице
       
       // Применяем спуфы через BrowserController
       await browserController.applySpoofs(page);
@@ -385,16 +366,9 @@ class MultiSurfer {
         return results;
       });
       
-      // Логируем результаты проверки
-      this.writeLog(`[Вкладка ${tabIndex}] 📐 Screen: ${spoofsStatus.screen.width}x${spoofsStatus.screen.height}`, 'INFO');
-      this.writeLog(`[Вкладка ${tabIndex}] 🗣️ Language: ${spoofsStatus.language.language}`, 'INFO');
-      this.writeLog(`[Вкладка ${tabIndex}] 💻 Hardware: ${spoofsStatus.hardware.cores} cores, ${spoofsStatus.hardware.memory} GB`, 'INFO');
+      // Спуфы применены успешно
       
-      if (spoofsStatus.webgl.vendor) {
-        this.writeLog(`[Вкладка ${tabIndex}] 🎮 WebGL: ${spoofsStatus.webgl.vendor} - ${spoofsStatus.webgl.renderer}`, 'INFO');
-      }
-      
-      this.writeLog(`[Вкладка ${tabIndex}] ✅ Спуфы успешно применены к основной странице`, 'SUCCESS');
+      // Спуфы успешно применены к основной странице
       
     } catch (error) {
       this.writeLog(`[Вкладка ${tabIndex}] ❌ Ошибка применения спуфов к основной странице: ${error.message}`, 'ERROR');
@@ -406,13 +380,13 @@ class MultiSurfer {
    */
   async workTab(context, tabSites, tabIndex, allPages, browserController) {
     const page = await context.newPage();
-    this.writeLog(`[Вкладка ${tabIndex}] 📄 Создана новая страница`, 'SUCCESS');
+    // Создана новая страница
     
     // Блокируем попапы на уровне страницы
     page.on('popup', async (popup) => {
       try {
         const popupUrl = popup.url();
-        this.writeLog(`[Вкладка ${tabIndex}] 🚫 Блокируем попап: ${popupUrl}`, 'WARN');
+        // Блокируем попап
         await popup.close();
       } catch (error) {
         // Игнорируем ошибки закрытия попапов
@@ -449,8 +423,6 @@ class MultiSurfer {
       
       const randomTab = availableTabs[Math.floor(Math.random() * availableTabs.length)];
       
-      this.writeLog(`[Вкладка ${currentTabIndex}] 🔄 Переключаемся на вкладку ${randomTab.tabIndex}`, 'INFO');
-      
       // Активируем случайную вкладку
       await randomTab.page.bringToFront();
       
@@ -462,7 +434,6 @@ class MultiSurfer {
       const currentPage = allPages.find(tab => tab.tabIndex === currentTabIndex);
       if (currentPage) {
         await currentPage.page.bringToFront();
-        this.writeLog(`[Вкладка ${currentTabIndex}] 🔄 Возвращаемся на вкладку ${currentTabIndex}`, 'INFO');
       }
       
     } catch (error) {
@@ -586,98 +557,104 @@ class MultiSurfer {
 // ИСПОЛЬЗОВАНИЕ
 // ========================================
 
-const args = process.argv.slice(2);
-const profileName = args[0];
+// Проверяем, запущен ли файл напрямую
+if (process.argv[1] && import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}`) {
+  const args = process.argv.slice(2);
+  const profileName = args[0];
 
-if (!profileName) {
-  console.log('❌ Укажите имя профиля!');
-  console.log('Использование: node multi-surfer.js <профиль> [опции]');
-  console.log('Примеры:');
-  console.log('  node multi-surfer.js bot-123456789 --tabs=3 --sites=site1.com,site2.com --clicks=2');
-  console.log('  node multi-surfer.js bot-123456789 --tabs=5 --clicks=1 --proxy');
-  console.log('  node multi-surfer.js bot-123456789 --tabs=3 --no-tab-switching');
-  console.log('  node multi-surfer.js bot-123456789 --tabs=3 --view-time=5-10');
-  process.exit(1);
-}
-
-// Список сайтов по умолчанию
-const defaultSites = [
-  'fortochka-okna.ru',
-  'mosokna.ru',
-  'окошко-рф.рф',
-  'fabrikaokon.ru',
-  'balkony-pod-kluch.ru',
-  'okno.ru',
-  'ramokna.ru',
-  'fabrikauyuta.ru',
-  'lemanapro.ru'
-];
-
-// Парсим опции
-const options = {
-  tabsCount: 3,
-  sites: defaultSites,
-  clicksPerSite: 2,
-  useProxy: false,
-  enableTabSwitching: true,
-  viewTimeMin: 5,
-  viewTimeMax: 10
-};
-
-// Парсим количество вкладок
-const tabsArg = args.find(arg => arg.startsWith('--tabs='));
-if (tabsArg) {
-  const tabs = parseInt(tabsArg.split('=')[1]);
-  if (tabs > 0 && tabs <= 10) {
-    options.tabsCount = tabs;
+  if (!profileName) {
+    console.log('❌ Укажите имя профиля!');
+    console.log('Использование: node multi-surfer.js <профиль> [опции]');
+    console.log('Примеры:');
+    console.log('  node multi-surfer.js bot-123456789 --tabs=3 --sites=site1.com,site2.com --clicks=2');
+    console.log('  node multi-surfer.js bot-123456789 --tabs=5 --clicks=1 --proxy');
+    console.log('  node multi-surfer.js bot-123456789 --tabs=3 --no-tab-switching');
+    console.log('  node multi-surfer.js bot-123456789 --tabs=3 --view-time=5-10');
+    process.exit(1);
   }
-}
 
-// Парсим список сайтов
-const sitesArg = args.find(arg => arg.startsWith('--sites='));
-if (sitesArg) {
-  const sitesList = sitesArg.split('=')[1];
-  options.sites = sitesList.split(',').map(site => site.trim());
-}
+  // Список сайтов по умолчанию
+  const defaultSites = [
+    'fortochka-okna.ru',
+    'mosokna.ru',
+    'окошко-рф.рф',
+    'fabrikaokon.ru',
+    'balkony-pod-kluch.ru',
+    'okno.ru',
+    'ramokna.ru',
+    'fabrikauyuta.ru',
+    'lemanapro.ru'
+  ];
 
-// Парсим количество кликов
-const clicksArg = args.find(arg => arg.startsWith('--clicks='));
-if (clicksArg) {
-  const clicks = parseInt(clicksArg.split('=')[1]);
-  if (clicks >= 0) {
-    options.clicksPerSite = clicks;
-  }
-}
+  // Парсим опции
+  const options = {
+    tabsCount: 3,
+    sites: defaultSites,
+    clicksPerSite: 2,
+    useProxy: false,
+    enableTabSwitching: true,
+    viewTimeMin: 5,
+    viewTimeMax: 10
+  };
 
-// Парсим прокси
-if (args.includes('--proxy')) {
-  options.useProxy = true;
-}
-
-// Парсим переключение вкладок
-if (args.includes('--no-tab-switching')) {
-  options.enableTabSwitching = false;
-}
-
-// Парсим время просмотра страниц
-const viewTimeArg = args.find(arg => arg.startsWith('--view-time='));
-if (viewTimeArg) {
-  const viewTimeValue = viewTimeArg.split('=')[1];
-  if (viewTimeValue.includes('-')) {
-    const [min, max] = viewTimeValue.split('-').map(v => parseInt(v.trim()));
-    if (min > 0 && max > 0 && min <= max) {
-      options.viewTimeMin = min;
-      options.viewTimeMax = max;
-    }
-  } else {
-    const time = parseInt(viewTimeValue);
-    if (time > 0) {
-      options.viewTimeMin = time;
-      options.viewTimeMax = time;
+  // Парсим количество вкладок
+  const tabsArg = args.find(arg => arg.startsWith('--tabs='));
+  if (tabsArg) {
+    const tabs = parseInt(tabsArg.split('=')[1]);
+    if (tabs > 0 && tabs <= 10) {
+      options.tabsCount = tabs;
     }
   }
+
+  // Парсим список сайтов
+  const sitesArg = args.find(arg => arg.startsWith('--sites='));
+  if (sitesArg) {
+    const sitesList = sitesArg.split('=')[1];
+    options.sites = sitesList.split(',').map(site => site.trim());
+  }
+
+  // Парсим количество кликов
+  const clicksArg = args.find(arg => arg.startsWith('--clicks='));
+  if (clicksArg) {
+    const clicks = parseInt(clicksArg.split('=')[1]);
+    if (clicks >= 0) {
+      options.clicksPerSite = clicks;
+    }
+  }
+
+  // Парсим прокси
+  if (args.includes('--proxy')) {
+    options.useProxy = true;
+  }
+
+  // Парсим переключение вкладок
+  if (args.includes('--no-tab-switching')) {
+    options.enableTabSwitching = false;
+  }
+
+  // Парсим время просмотра страниц
+  const viewTimeArg = args.find(arg => arg.startsWith('--view-time='));
+  if (viewTimeArg) {
+    const viewTimeValue = viewTimeArg.split('=')[1];
+    if (viewTimeValue.includes('-')) {
+      const [min, max] = viewTimeValue.split('-').map(v => parseInt(v.trim()));
+      if (min > 0 && max > 0 && min <= max) {
+        options.viewTimeMin = min;
+        options.viewTimeMax = max;
+      }
+    } else {
+      const time = parseInt(viewTimeValue);
+      if (time > 0) {
+        options.viewTimeMin = time;
+        options.viewTimeMax = time;
+      }
+    }
+  }
+
+  // Создаем и запускаем многопоточный серфер
+  const multiSurfer = new MultiSurfer(profileName, options);
+  await multiSurfer.startMultiSurfing();
 }
 
-// Создаем и запускаем многопоточный серфер
-const multiSurfer = new MultiSurfer(profileName, options);
-await multiSurfer.startMultiSurfing();
+// Экспортируем класс для использования в других модулях
+export { MultiSurfer };
