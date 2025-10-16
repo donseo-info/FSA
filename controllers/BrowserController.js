@@ -267,6 +267,18 @@ class BrowserController {
       chromeArgs.push(extensionArg);
     }
 
+    // Добавляем аргументы для блокировки попапов и уведомлений
+    chromeArgs.push('--disable-notifications');
+    chromeArgs.push('--disable-popup-blocking');
+    chromeArgs.push('--disable-features=TranslateUI');
+    chromeArgs.push('--disable-background-timer-throttling');
+    chromeArgs.push('--disable-backgrounding-occluded-windows');
+    chromeArgs.push('--disable-renderer-backgrounding');
+    chromeArgs.push('--disable-hang-monitor');
+    chromeArgs.push('--disable-prompt-on-repost');
+    chromeArgs.push('--disable-domain-reliability');
+    chromeArgs.push('--disable-component-extensions-with-background-pages');
+
     this.chromeProcess = spawn(this.chromePath, chromeArgs, {
       detached: true,
       stdio: 'ignore'
@@ -285,6 +297,23 @@ class BrowserController {
     
     this.browser = await chromium.connectOverCDP(`http://localhost:${this.port}`);
     this.context = this.browser.contexts()[0];
+    
+    // Блокируем попапы и новые окна (но не наши собственные страницы)
+    this.context.on('page', (page) => {
+      // Даем странице время инициализироваться
+      setTimeout(async () => {
+        try {
+          const url = page.url();
+          // Блокируем только если это не about:blank (наши новые страницы)
+          if (url !== 'about:blank' && !url.startsWith('chrome-extension://')) {
+            console.log(`🚫 Блокируем попап: ${url}`);
+            await page.close();
+          }
+        } catch (error) {
+          // Игнорируем ошибки закрытия
+        }
+      }, 100);
+    });
     
     const existingPages = this.context.pages();
     console.log(`📄 Найдено страниц: ${existingPages.length}`);
@@ -343,6 +372,36 @@ class BrowserController {
    * Применяет все спуфы к странице
    */
   async applySpoofs(page) {
+    // Блокируем попапы и новые окна через JavaScript
+    try {
+      await page.evaluate(() => {
+        // Блокируем window.open
+        window.open = function() {
+          console.log('🚫 Блокирован window.open');
+          return null;
+        };
+        
+        // Блокируем создание новых окон
+        const originalAddEventListener = window.addEventListener;
+        window.addEventListener = function(type, listener, options) {
+          if (type === 'beforeunload' || type === 'unload') {
+            return;
+          }
+          return originalAddEventListener.call(this, type, listener, options);
+        };
+        
+        // Блокируем alert, confirm, prompt
+        window.alert = function() { console.log('🚫 Блокирован alert'); };
+        window.confirm = function() { console.log('🚫 Блокирован confirm'); return false; };
+        window.prompt = function() { console.log('🚫 Блокирован prompt'); return null; };
+      });
+    } catch (error) {
+      // Игнорируем ошибки если контекст был уничтожен
+      if (!error.message.includes('Execution context was destroyed')) {
+        console.warn('⚠️ Ошибка применения блокировки попапов:', error.message);
+      }
+    }
+
     const spoofs = [
       { name: 'ScreenSpoof', spoof: this.spoofs.screen },
       { name: 'LanguageSpoof', spoof: this.spoofs.language },

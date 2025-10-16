@@ -1,5 +1,92 @@
 import { ProfileGenerator } from './managers/ProfileGenerator.js';
 import { generateRandomId, formatDate } from './utils/helpers.js';
+import fs from 'fs';
+import path from 'path';
+
+/**
+ * Сканирует папку F:\Browser и возвращает массив доступных версий Chrome
+ */
+function scanBrowserVersions() {
+  const browserDir = 'F:\\Browser';
+  const chromePaths = [];
+  
+  try {
+    if (!fs.existsSync(browserDir)) {
+      console.log('⚠️ Папка F:\\Browser не найдена, используем стандартные пути');
+      return [
+        {
+          path: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+          versions: ['141.0.7390.66']
+        }
+      ];
+    }
+    
+    const folders = fs.readdirSync(browserDir, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => dirent.name);
+    
+    console.log(`🔍 Найдено ${folders.length} версий браузера в F:\\Browser`);
+    
+    folders.forEach(folder => {
+      const chromePath = path.join(browserDir, folder, 'App', 'Chrome-bin', 'chrome.exe');
+      
+      if (fs.existsSync(chromePath)) {
+        // Извлекаем версию из имени папки (например, "141-66" -> "141.0.0.66")
+        const versionMatch = folder.match(/^(\d+)-(\d+)$/);
+        if (versionMatch) {
+          const majorVersion = versionMatch[1];
+          const buildVersion = versionMatch[2];
+          const fullVersion = `${majorVersion}.0.0.${buildVersion}`;
+          
+          chromePaths.push({
+            path: chromePath,
+            versions: [fullVersion],
+            folder: folder
+          });
+          
+          console.log(`  ✅ ${folder} -> ${fullVersion}`);
+        } else {
+          console.log(`  ⚠️ Неизвестный формат папки: ${folder}`);
+        }
+      } else {
+        console.log(`  ❌ Chrome не найден в папке: ${folder}`);
+      }
+    });
+    
+    // Добавляем стандартный Chrome, если он установлен
+    const standardChrome = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+    if (fs.existsSync(standardChrome)) {
+      chromePaths.push({
+        path: standardChrome,
+        versions: ['141.0.7390.66'],
+        folder: 'Standard'
+      });
+      console.log(`  ✅ Standard Chrome -> 141.0.7390.66`);
+    }
+    
+    if (chromePaths.length === 0) {
+      console.log('❌ Не найдено ни одной версии Chrome!');
+      return [
+        {
+          path: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+          versions: ['141.0.7390.66']
+        }
+      ];
+    }
+    
+    console.log(`\n📊 Итого найдено ${chromePaths.length} версий Chrome\n`);
+    return chromePaths;
+    
+  } catch (error) {
+    console.error('❌ Ошибка при сканировании папки браузеров:', error.message);
+    return [
+      {
+        path: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+        versions: ['141.0.7390.66']
+      }
+    ];
+  }
+}
 
 /**
  * Генерирует уникальное имя профиля
@@ -21,10 +108,16 @@ function generateUniqueProfileName(generator) {
   return profileName;
 }
 
+
 /**
  * Создает множество профилей
  */
 async function createMultipleProfiles(count) {
+  console.log('🔍 Сканирование доступных версий браузера...\n');
+  
+  // Автоматически находим все версии Chrome
+  const chromePaths = scanBrowserVersions();
+  
   const generator = new ProfileGenerator({
     resolutions: [
       { width: 1920, height: 1080 },
@@ -34,19 +127,11 @@ async function createMultipleProfiles(count) {
       { width: 2560, height: 1440 },
       { width: 1680, height: 1050 },
       { width: 1600, height: 900 },
-      { width: 1280, height: 720 }
+      { width: 1280, height: 720 },
+      { width: 1536, height: 864 },
+      { width: 1280, height: 1200 }
     ],
-    chromePaths: [
-      {
-        path: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-        versions: ['141.0.7390.66', '141.0.7390.65', '141.0.7390.56']
-      },
-      {
-        path: 'F:\\Browser\\140-186\\App\\Chrome-bin\\chrome.exe',
-        versions: ['140.0.6921.186']
-      }
-      // Добавь остальные пути к браузерам
-    ]
+    chromePaths: chromePaths
   });
 
   console.log(`\n🤖 Автоматическое создание ${count} бот-профилей\n`);

@@ -408,6 +408,17 @@ class MultiSurfer {
     const page = await context.newPage();
     this.writeLog(`[Вкладка ${tabIndex}] 📄 Создана новая страница`, 'SUCCESS');
     
+    // Блокируем попапы на уровне страницы
+    page.on('popup', async (popup) => {
+      try {
+        const popupUrl = popup.url();
+        this.writeLog(`[Вкладка ${tabIndex}] 🚫 Блокируем попап: ${popupUrl}`, 'WARN');
+        await popup.close();
+      } catch (error) {
+        // Игнорируем ошибки закрытия попапов
+      }
+    });
+    
     // Применяем спуфы к основной странице
     await this.applySpoofsToMainPage(page, tabIndex, browserController);
     
@@ -591,7 +602,6 @@ if (!profileName) {
 
 // Список сайтов по умолчанию
 const defaultSites = [
-  'help.emaktab.uz',
   'fortochka-okna.ru',
   'mosokna.ru',
   'окошко-рф.рф',

@@ -129,11 +129,22 @@ class ProfileGenerator {
     // Создаем директорию профиля
     fs.mkdirSync(profilePath, { recursive: true });
     
-    // Сохраняем метаданные
-    this.metadata[profileName] = {
+    // Инициализируем секцию profiles, если её нет
+    if (!this.metadata.profiles) {
+      this.metadata.profiles = {};
+    }
+    
+    // Сохраняем метаданные в секцию profiles
+    this.metadata.profiles[profileName] = {
+      name: profileName,
       ...config,
       createdAt: new Date().toISOString(),
-      lastUsed: null
+      lastUsed: null,
+      cookies: {
+        totalCookies: 0,
+        uniqueDomains: 0,
+        lastUpdated: new Date().toISOString()
+      }
     };
     
     this.saveMetadata();
@@ -154,7 +165,7 @@ class ProfileGenerator {
       console.log(`   🔌 Плагины: нет`);
     }
     
-    return this.metadata[profileName];
+    return this.metadata.profiles[profileName];
   }
 
   /**
@@ -176,24 +187,24 @@ class ProfileGenerator {
    */
   getProfileConfig(profileName) {
     console.log('🔍 getProfileConfig вызван с profileName:', profileName);
-    console.log('🔍 Доступные профили:', Object.keys(this.metadata));
+    console.log('🔍 Доступные профили:', this.metadata.profiles ? Object.keys(this.metadata.profiles) : []);
     
-    if (!this.metadata[profileName]) {
+    if (!this.metadata.profiles || !this.metadata.profiles[profileName]) {
       throw new Error(`Профиль ${profileName} не найден`);
     }
     
     // Обновляем время последнего использования
-    this.metadata[profileName].lastUsed = new Date().toISOString();
+    this.metadata.profiles[profileName].lastUsed = new Date().toISOString();
     this.saveMetadata();
     
-    return this.metadata[profileName];
+    return this.metadata.profiles[profileName];
   }
 
   /**
    * Проверяет существование профиля
    */
   profileExists(profileName) {
-    return !!this.metadata[profileName];
+    return !!(this.metadata.profiles && this.metadata.profiles[profileName]);
   }
 
   /**
@@ -212,7 +223,9 @@ class ProfileGenerator {
     }
     
     // Удаляем из метаданных
-    delete this.metadata[profileName];
+    if (this.metadata.profiles) {
+      delete this.metadata.profiles[profileName];
+    }
     this.saveMetadata();
     
     console.log(`🗑️ Профиль удален: ${profileName}`);
@@ -222,9 +235,12 @@ class ProfileGenerator {
    * Возвращает список всех профилей
    */
   getAllProfiles() {
-    return Object.keys(this.metadata).map(name => ({
+    if (!this.metadata.profiles) {
+      return [];
+    }
+    return Object.keys(this.metadata.profiles).map(name => ({
       name,
-      ...this.metadata[name]
+      ...this.metadata.profiles[name]
     }));
   }
 

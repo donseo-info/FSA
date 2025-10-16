@@ -93,9 +93,6 @@ class ProfileManager {
       return {
         totalCookies: cookies.length,
         uniqueDomains: uniqueDomainsCount,
-        domains: domainsList,
-        domainStats: domainStats,
-        cookies: cookies,
         lastUpdated: new Date().toISOString()
       };
       
@@ -104,9 +101,6 @@ class ProfileManager {
       return {
         totalCookies: 0,
         uniqueDomains: 0,
-        domains: [],
-        domainStats: {},
-        cookies: [],
         lastUpdated: new Date().toISOString(),
         error: error.message
       };

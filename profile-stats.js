@@ -27,27 +27,8 @@ async function showProfileStats() {
     const profilesWithCookies = profiles.filter(p => p.totalCookies > 0).length;
     console.log(`🍪 Профилей с куками: ${profilesWithCookies} из ${profiles.length}`);
     
-    // Топ-5 доменов по количеству куков
-    const allDomains = {};
-    profiles.forEach(profile => {
-      const profileData = profileManager.getProfileCookiesInfo(profile.name);
-      if (profileData.domainStats) {
-        Object.entries(profileData.domainStats).forEach(([domain, count]) => {
-          allDomains[domain] = (allDomains[domain] || 0) + count;
-        });
-      }
-    });
-    
-    const topDomains = Object.entries(allDomains)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 5);
-    
-    if (topDomains.length > 0) {
-      console.log('\n🌐 Топ-5 доменов по количеству куков:');
-      topDomains.forEach(([domain, count], index) => {
-        console.log(`   ${index + 1}. ${domain}: ${count} кук`);
-      });
-    }
+    // Информация о доменах больше не доступна (оптимизация)
+    console.log('\n💡 Детальная информация о доменах не сохраняется для экономии места.');
   }
   
   console.log('\n✅ Статистика загружена успешно!');
