@@ -1,7 +1,7 @@
 import { chromium } from 'playwright';
 import { spawn } from 'child_process';
 import path from 'path';
-import { ScreenSpoof, LanguageSpoof, HardwareSpoof, WebRTCSpoof, WebGLSpoof, CanvasSpoof, AudioSpoof } from '../spoofs/index.js';
+import { ScreenSpoof, LanguageSpoof, HardwareSpoof, WebRTCSpoof, WebGLSpoof, CanvasSpoof, AudioSpoof, SeoGoogleSpoof, RealPluginSpoof } from '../spoofs/index.js';
 import { ProfileGenerator } from '../managers/ProfileGenerator.js';
 
 /**
@@ -12,6 +12,7 @@ class BrowserController {
     this.profileName = profileName;
     this.port = options.port || 9222;
     this.proxy = options.proxy || null;
+    this.enablePlugins = options.enablePlugins !== false; // по умолчанию включены
     
     // Загружаем конфиг профиля
     const generator = new ProfileGenerator();
@@ -55,7 +56,11 @@ class BrowserController {
       }),
       audio: new AudioSpoof({
         seed: this.config.webgl.seed
-      })
+      }),
+      seoGoogle: new SeoGoogleSpoof({
+        profilePath: this.profilePath
+      }),
+      // Плагины будут загружаться динамически из конфига профиля
     };
 
     // WebRTC только если есть прокси
@@ -73,6 +78,80 @@ class BrowserController {
     }
 
     return spoofs;
+  }
+
+  /**
+   * Загружает плагины из конфига профиля
+   */
+  loadProfilePlugins(extensions) {
+    if (!this.enablePlugins) {
+      console.log(`🔌 Загрузка плагинов отключена`);
+      return;
+    }
+    
+    if (this.config.plugins && Array.isArray(this.config.plugins)) {
+      console.log(`🔌 Загружаем ${this.config.plugins.length} плагинов из конфига профиля`);
+      
+      for (const plugin of this.config.plugins) {
+        if (plugin.enabled && plugin.path) {
+          console.log(`🔌 Загружаем плагин: ${plugin.name} v${plugin.version} (${plugin.id})`);
+          extensions.push(plugin.path);
+        }
+      }
+    } else {
+      console.log(`🔌 Плагины в конфиге профиля не найдены`);
+    }
+  }
+
+  /**
+   * Настраивает блокировку URL плагинов
+   */
+  async setupPluginBlocking(page) {
+    try {
+      // Блокируем chrome-extension URL
+      await page.route('chrome-extension://**', (route) => {
+        const url = route.request().url();
+        console.log(`🚫 Блокируем URL плагина: ${url}`);
+        route.abort('blockedbyclient');
+      });
+      
+      // Блокируем moz-extension URL (для Firefox)
+      await page.route('moz-extension://**', (route) => {
+        const url = route.request().url();
+        console.log(`🚫 Блокируем URL плагина: ${url}`);
+        route.abort('blockedbyclient');
+      });
+      
+      // Блокируем edge-extension URL (для Edge)
+      await page.route('ms-browser-extension://**', (route) => {
+        const url = route.request().url();
+        console.log(`🚫 Блокируем URL плагина: ${url}`);
+        route.abort('blockedbyclient');
+      });
+      
+      // Блокируем конкретные страницы плагинов
+      await page.route('**/installed.html', (route) => {
+        const url = route.request().url();
+        console.log(`🚫 Блокируем страницу установки: ${url}`);
+        route.abort('blockedbyclient');
+      });
+      
+      await page.route('**/welcome.html', (route) => {
+        const url = route.request().url();
+        console.log(`🚫 Блокируем приветственную страницу: ${url}`);
+        route.abort('blockedbyclient');
+      });
+      
+      await page.route('**/onboarding.html', (route) => {
+        const url = route.request().url();
+        console.log(`🚫 Блокируем страницу онбординга: ${url}`);
+        route.abort('blockedbyclient');
+      });
+      
+      console.log('🚫 Блокировка URL плагинов настроена');
+    } catch (error) {
+      console.log(`⚠️ Ошибка настройки блокировки плагинов: ${error.message}`);
+    }
   }
 
   /**
@@ -157,12 +236,35 @@ class BrowserController {
       chromeArgs.push(`--proxy-server=${this.proxy.server}`);
     }
 
-    // Создаем и загружаем WebRTC расширение
+    // Создаем и загружаем расширения
+    const extensions = [];
+    
+    // WebRTC расширение
     if (this.spoofs.webrtc) {
       const extensionPath = this.spoofs.webrtc.createExtension();
       if (extensionPath) {
-        chromeArgs.push(`--load-extension=${extensionPath}`);
+        extensions.push(extensionPath);
       }
+    }
+    
+    // SEO Google расширение
+    if (this.enablePlugins && this.spoofs.seoGoogle) {
+      const extensionPath = this.spoofs.seoGoogle.createExtension();
+      if (extensionPath) {
+        extensions.push(extensionPath);
+      }
+    }
+    
+    // Плагины теперь загружаются из конфига профиля
+    
+    // Загружаем плагины из конфига профиля
+    this.loadProfilePlugins(extensions);
+    
+    // Загружаем все расширения
+    if (extensions.length > 0) {
+      const extensionArg = `--load-extension=${extensions.join(',')}`;
+      console.log(`🔌 Загружаем расширения: ${extensionArg}`);
+      chromeArgs.push(extensionArg);
     }
 
     this.chromeProcess = spawn(this.chromePath, chromeArgs, {
@@ -190,6 +292,7 @@ class BrowserController {
     // Применяем спуфы к существующим страницам
     for (const page of existingPages) {
       await this.applySpoofs(page);
+      await this.setupPluginBlocking(page);
       try {
         await page.reload({ waitUntil: 'domcontentloaded' });
       } catch (e) {
@@ -201,7 +304,28 @@ class BrowserController {
     this.context.on('page', async (page) => {
       console.log('📄 Новая страница обнаружена');
       await page.waitForTimeout(100);
+      
+      // Проверяем, не является ли это страницей плагина
+      const url = page.url();
+      console.log(`🔍 Проверяем URL новой страницы: ${url}`);
+      
+      if (url.includes('chrome-extension://') || url.includes('installed.html') || url.includes('welcome.html') || url.includes('onboarding.html')) {
+        console.log(`🚫 Обнаружена страница плагина, закрываем: ${url}`);
+        try {
+          await page.close();
+          console.log(`✅ Страница плагина успешно закрыта`);
+          return;
+        } catch (error) {
+          console.log(`⚠️ Ошибка закрытия страницы плагина: ${error.message}`);
+        }
+      } else {
+        console.log(`✅ Обычная страница, продолжаем обработку`);
+      }
+      
       await this.applySpoofs(page);
+      
+      // Блокируем URL плагинов
+      await this.setupPluginBlocking(page);
       
       // Применяем спуфы к новым фреймам
       page.on('frameattached', async (frame) => {
@@ -219,12 +343,22 @@ class BrowserController {
    * Применяет все спуфы к странице
    */
   async applySpoofs(page) {
-    await this.spoofs.screen.apply(page);
-    await this.spoofs.language.apply(page);
-    await this.spoofs.hardware.apply(page);
-    await this.spoofs.webgl.apply(page);
-    await this.spoofs.canvas.apply(page);
-    await this.spoofs.audio.apply(page);
+    const spoofs = [
+      { name: 'ScreenSpoof', spoof: this.spoofs.screen },
+      { name: 'LanguageSpoof', spoof: this.spoofs.language },
+      { name: 'HardwareSpoof', spoof: this.spoofs.hardware },
+      { name: 'WebGLSpoof', spoof: this.spoofs.webgl },
+      { name: 'CanvasSpoof', spoof: this.spoofs.canvas },
+      { name: 'AudioSpoof', spoof: this.spoofs.audio }
+    ];
+    
+    for (const { name, spoof } of spoofs) {
+      try {
+        await spoof.apply(page);
+      } catch (error) {
+        console.log(`⚠️ Ошибка применения спуфа ${name}: ${error.message}`);
+      }
+    }
     
     page.setDefaultTimeout(60000);
     page.setDefaultNavigationTimeout(60000);
@@ -235,15 +369,38 @@ class BrowserController {
    */
   async applySpoofsToFrame(frame) {
     try {
-      // Применяем спуфы к фрейму через evaluateOnNewDocument
-      await frame.evaluateOnNewDocument(this.spoofs.screen.getInjectionCode());
-      await frame.evaluateOnNewDocument(this.spoofs.language.getInjectionCode());
-      await frame.evaluateOnNewDocument(this.spoofs.hardware.getInjectionCode());
-      await frame.evaluateOnNewDocument(this.spoofs.webgl.getInjectionCode());
-      await frame.evaluateOnNewDocument(this.spoofs.canvas.getInjectionCode());
-      await frame.evaluateOnNewDocument(this.spoofs.audio.getInjectionCode());
+      // Проверяем, что фрейм не отсоединен
+      if (frame.isDetached()) {
+        console.log('⚠️ Фрейм отсоединен, пропускаем применение спуфов');
+        return;
+      }
       
-      console.log('🖼️ Спуфы применены к фрейму');
+      const frameUrl = frame.url();
+      
+      // Применяем каждый спуф отдельно для избежания синтаксических ошибок
+      const spoofs = [
+        this.spoofs.screen,
+        this.spoofs.language,
+        this.spoofs.hardware,
+        this.spoofs.webgl,
+        this.spoofs.canvas,
+        this.spoofs.audio
+      ];
+      
+      for (const spoof of spoofs) {
+        try {
+          // Дополнительная проверка перед каждым спуфом
+          if (frame.isDetached()) {
+            console.log('⚠️ Фрейм отсоединен во время применения спуфов');
+            break;
+          }
+          await frame.evaluate(spoof.getInjectionCode());
+        } catch (spoofError) {
+          console.log(`⚠️ Ошибка применения спуфа ${spoof.constructor.name}: ${spoofError.message}`);
+        }
+      }
+      
+      console.log(`🖼️ Спуфы применены к фрейму: ${frameUrl}`);
     } catch (error) {
       console.log(`⚠️ Ошибка применения спуфов к фрейму: ${error.message}`);
     }

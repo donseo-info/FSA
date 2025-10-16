@@ -47,7 +47,7 @@ async function startBrowser(profileName, port = 9222, useProxy = false) {
     }
     
     // Создаем контроллер с прокси
-    const browser = new BrowserController(profileName, { port, proxy });
+    const browser = new BrowserController(profileName, { port, proxy, enablePlugins: false });
     
     // Если есть WebRTC spoof и IP прокси, устанавливаем IP
     if (browser.spoofs.webrtc && proxyIP) {
@@ -153,32 +153,52 @@ await page.goto('https://vk.com', {
 });
 
 writeLog('✅ Страница загружена!', 'SUCCESS');
-writeLog(`📄 Заголовок: ${await page.title()}`, 'INFO');
+
+// Получаем заголовок с обработкой ошибок
+try {
+  const title = await page.title();
+  writeLog(`📄 Заголовок: ${title}`, 'INFO');
+} catch (error) {
+  writeLog(`⚠️ Не удалось получить заголовок: ${error.message}`, 'WARN');
+}
 
 // Проверяем, что спуфы применились
 try {
+  // Проверяем GPU
   const gpuInfo = await page.evaluate(() => {
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    if (gl) {
-      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-      if (debugInfo) {
-        return {
-          vendor: gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL),
-          renderer: gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
-        };
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (gl) {
+        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        if (debugInfo) {
+          return {
+            vendor: gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL),
+            renderer: gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
+          };
+        }
       }
+      return null;
+    } catch (e) {
+      return { error: e.message };
     }
-    return null;
   });
   
-  if (gpuInfo) {
+  if (gpuInfo && !gpuInfo.error) {
     writeLog(`🎮 GPU Vendor: ${gpuInfo.vendor}`, 'INFO');
     writeLog(`🎮 GPU Renderer: ${gpuInfo.renderer}`, 'INFO');
+  } else if (gpuInfo && gpuInfo.error) {
+    writeLog(`⚠️ Ошибка получения GPU: ${gpuInfo.error}`, 'WARN');
   }
   
   // Проверяем User Agent
-  const userAgent = await page.evaluate(() => navigator.userAgent);
+  const userAgent = await page.evaluate(() => {
+    try {
+      return navigator.userAgent;
+    } catch (e) {
+      return `Error: ${e.message}`;
+    }
+  });
   writeLog(`🌐 User Agent: ${userAgent.substring(0, 100)}...`, 'INFO');
   
 } catch (error) {

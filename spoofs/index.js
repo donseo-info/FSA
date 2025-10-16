@@ -8,3 +8,5 @@ export { WebRTCSpoof } from './WebRTCSpoof.js';
 export { WebGLSpoof } from './WebGLSpoof.js';
 export { CanvasSpoof } from './CanvasSpoof.js';
 export { AudioSpoof } from './AudioSpoof.js';
+export { SeoGoogleSpoof } from './SeoGoogleSpoof.js';
+export { RealPluginSpoof } from './RealPluginSpoof.js';

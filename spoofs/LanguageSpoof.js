@@ -60,7 +60,7 @@ class LanguageSpoof {
       Object.setPrototypeOf(Intl.Collator, OriginalCollator);
       Intl.Collator.prototype = OriginalCollator.prototype;
       
-      console.log('[LanguageSpoof] ✅ Applied:', ${locale});
+      console.log('[LanguageSpoof] ✅ Applied:', '${locale}');
     `;
   }
 

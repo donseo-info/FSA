@@ -47,7 +47,7 @@ class HardwareSpoof {
         });
       }
       
-      console.log('[HardwareSpoof] ✅ Applied: ${cores} cores, ${memory} GB');
+      console.log('[HardwareSpoof] ✅ Applied: ' + ${cores} + ' cores, ' + ${memory} + ' GB');
     `;
   }
 

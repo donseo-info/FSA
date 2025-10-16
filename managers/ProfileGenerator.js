@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { getRandomDevice } from '../configs/devices.js';
+import { PluginManager } from '../utils/PluginManager.js';
 
 /**
  * Генератор профилей браузера
@@ -24,6 +25,7 @@ class ProfileGenerator {
     
     this.ensureProfilesDir();
     this.metadata = this.loadMetadata();
+    this.pluginManager = new PluginManager();
   }
 
   /**
@@ -83,6 +85,10 @@ class ProfileGenerator {
       Math.floor(Math.random() * chromeConfig.versions.length)
     ];
     
+    // Генерируем случайные плагины (0-3 плагина)
+    const pluginCount = Math.floor(Math.random() * 4); // 0, 1, 2 или 3 плагина
+    const randomPlugins = this.pluginManager.getRandomPlugins(pluginCount);
+    
     return {
       // Информация об устройстве
       deviceName: device.name,
@@ -100,7 +106,10 @@ class ProfileGenerator {
       
       // Chrome конфигурация
       chromePath,
-      chromeVersion
+      chromeVersion,
+      
+      // Случайные плагины
+      plugins: randomPlugins
     };
   }
 
@@ -135,6 +144,15 @@ class ProfileGenerator {
     console.log(`   🗣️ Язык: ${config.locale}`);
     console.log(`   💻 Железо: ${config.hardware.cores} ядер, ${config.hardware.memory} GB`);
     console.log(`   🎮 GPU: ${config.webgl.renderer}`);
+    
+    if (config.plugins && config.plugins.length > 0) {
+      console.log(`   🔌 Плагины (${config.plugins.length}):`);
+      config.plugins.forEach(plugin => {
+        console.log(`      📦 ${plugin.name} v${plugin.version} (${plugin.id})`);
+      });
+    } else {
+      console.log(`   🔌 Плагины: нет`);
+    }
     
     return this.metadata[profileName];
   }

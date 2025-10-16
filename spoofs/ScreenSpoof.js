@@ -44,7 +44,7 @@ class ScreenSpoof {
         configurable: true
       });
       
-      console.log('[ScreenSpoof] ✅ Applied:', ${width}x${height});
+      console.log('[ScreenSpoof] ✅ Applied:', '${width}x${height}');
     `;
   }
 
