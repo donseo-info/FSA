@@ -1,6 +1,7 @@
 import { chromium } from 'playwright';
 import { spawn } from 'child_process';
 import path from 'path';
+import fs from 'fs';
 import { ScreenSpoof, LanguageSpoof, HardwareSpoof, WebRTCSpoof, WebGLSpoof, CanvasSpoof, AudioSpoof, SeoGoogleSpoof, RealPluginSpoof } from '../spoofs/index.js';
 import { ProfileGenerator } from '../managers/ProfileGenerator.js';
 
@@ -23,6 +24,18 @@ class BrowserController {
     
     // Инициализируем спуфы
     this.spoofs = this.initializeSpoofs();
+    
+    // Настройка блокировки ресурсов
+    this.enableResourceBlocking = options.enableResourceBlocking !== false; // по умолчанию включено
+    
+    // Загружаем правила блокировки только если включена блокировка
+    if (this.enableResourceBlocking) {
+      this.blockRules = this.loadBlockRules();
+      this.allowRules = this.loadAllowRules();
+    } else {
+      this.blockRules = [];
+      this.allowRules = [];
+    }
     
     this.chromeProcess = null;
     this.browser = null;
@@ -78,6 +91,79 @@ class BrowserController {
     }
 
     return spoofs;
+  }
+
+  /**
+   * Загружает правила блокировки из файла
+   */
+  loadBlockRules() {
+    try {
+      const blockPath = path.resolve('./configs/block-rules.txt');
+      const content = fs.readFileSync(blockPath, 'utf-8');
+      return content.split('\n')
+        .map(line => line.trim())
+        .filter(line => line && !line.startsWith('#'))
+        .map(pattern => this.patternToRegex(pattern));
+    } catch (error) {
+      console.warn('⚠️ Не удалось загрузить правила блокировки:', error.message);
+      return [];
+    }
+  }
+
+  /**
+   * Загружает правила разрешения из файла
+   */
+  loadAllowRules() {
+    try {
+      const allowPath = path.resolve('./configs/allow-rules.txt');
+      const content = fs.readFileSync(allowPath, 'utf-8');
+      return content.split('\n')
+        .map(line => line.trim())
+        .filter(line => line && !line.startsWith('#'))
+        .map(pattern => this.patternToRegex(pattern));
+    } catch (error) {
+      console.warn('⚠️ Не удалось загрузить правила разрешения:', error.message);
+      return [];
+    }
+  }
+
+  /**
+   * Преобразует паттерн в регулярное выражение
+   */
+  patternToRegex(pattern) {
+    // Сначала заменяем * на .*, затем экранируем остальные специальные символы
+    let regex = pattern
+      .replace(/\*/g, '.*')  // Заменяем * на .*
+      .replace(/[.+^${}()|[\]\\]/g, '\\$&'); // Экранируем остальные символы
+    
+    // Обрабатываем специальные случаи
+    regex = regex
+      .replace(/\\\.\\\*/g, '.*')  // Восстанавливаем .* после экранирования
+      .replace(/\\\+/g, '\\+')     // Экранируем +
+      .replace(/\\"/g, '"');       // Убираем экранирование кавычек
+    
+    return new RegExp(regex, 'i');
+  }
+
+  /**
+   * Проверяет, должен ли ресурс быть заблокирован
+   */
+  shouldBlockResource(url) {
+    // Сначала проверяем правила разрешения
+    for (const allowRule of this.allowRules) {
+      if (allowRule.test(url)) {
+        return false; // Разрешаем
+      }
+    }
+    
+    // Затем проверяем правила блокировки
+    for (const blockRule of this.blockRules) {
+      if (blockRule.test(url)) {
+        return true; // Блокируем
+      }
+    }
+    
+    return false; // По умолчанию разрешаем
   }
 
   /**
@@ -264,21 +350,15 @@ class BrowserController {
       chromeArgs.push(extensionArg);
     }
 
-    // Добавляем аргументы для блокировки попапов и уведомлений
+    // Добавляем только безопасные аргументы
     chromeArgs.push('--disable-notifications');
     chromeArgs.push('--disable-popup-blocking');
     chromeArgs.push('--disable-features=TranslateUI');
-    chromeArgs.push('--disable-background-timer-throttling');
-    chromeArgs.push('--disable-backgrounding-occluded-windows');
-    chromeArgs.push('--disable-renderer-backgrounding');
-    chromeArgs.push('--disable-hang-monitor');
-    chromeArgs.push('--disable-prompt-on-repost');
-    chromeArgs.push('--disable-domain-reliability');
-    chromeArgs.push('--disable-component-extensions-with-background-pages');
 
     this.chromeProcess = spawn(this.chromePath, chromeArgs, {
       detached: true,
-      stdio: 'ignore'
+      stdio: 'ignore',
+      windowsHide: true  // Скрываем окно на Windows
     });
     
     this.chromeProcess.unref();
@@ -417,6 +497,36 @@ class BrowserController {
     
     page.setDefaultTimeout(60000);
     page.setDefaultNavigationTimeout(60000);
+    
+    // Настраиваем блокировку ресурсов
+    await this.setupResourceBlocking(page);
+  }
+
+  /**
+   * Настраивает блокировку ресурсов на странице
+   */
+  async setupResourceBlocking(page) {
+    if (!this.enableResourceBlocking) {
+      console.log('🛡️ Блокировка ресурсов отключена');
+      return;
+    }
+    
+    try {
+      // Включаем блокировку запросов через CDP
+      await page.route('**/*', (route) => {
+        const url = route.request().url();
+        
+              if (this.shouldBlockResource(url)) {
+                route.abort();
+              } else {
+                route.continue();
+              }
+      });
+      
+      console.log(`🛡️ Блокировка ресурсов настроена (${this.blockRules.length} правил блокировки, ${this.allowRules.length} правил разрешения)`);
+    } catch (error) {
+      console.warn('⚠️ Ошибка настройки блокировки ресурсов:', error.message);
+    }
   }
 
   /**

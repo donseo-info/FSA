@@ -37,28 +37,29 @@ class CanvasSpoof {
         const OrigToDataURL = HTMLCanvasElement.prototype.toDataURL;
         
         HTMLCanvasElement.prototype.toDataURL = function(...args) {
-          console.log('[CanvasSpoof] toDataURL called:', this.width, 'x', this.height);
-          
           // Маленькие canvas не трогаем
           if (this.width <= 16 || this.height <= 16) {
-            console.log('[CanvasSpoof] Canvas too small, skipping');
             return OrigToDataURL.apply(this, args);
           }
           
           // Проверяем кэш
           if (canvasCache.has(this)) {
-            console.log('[CanvasSpoof] Returning cached result');
             return canvasCache.get(this);
           }
           
           try {
             const ctx = this.getContext('2d');
             if (!ctx) {
-              console.log('[CanvasSpoof] No 2d context');
               return OrigToDataURL.apply(this, args);
             }
             
-            console.log('[CanvasSpoof] Applying noise...');
+            // Проверяем на tainted canvas
+            try {
+              ctx.getImageData(0, 0, 1, 1);
+            } catch (e) {
+              // Tainted canvas - не можем модифицировать
+              return OrigToDataURL.apply(this, args);
+            }
             
             // Читаем данные
             const imageData = ctx.getImageData(0, 0, this.width, this.height);
@@ -67,14 +68,12 @@ class CanvasSpoof {
             // Применяем консистентный шум
             const random = makeRandom(SEED + this.width + this.height);
             
-            // Изменяем 5% пикселей (было 0.5%)
-            const pixelsToModify = Math.floor(data.length / 4 * 0.05);
-            
-            console.log('[CanvasSpoof] Modifying', pixelsToModify, 'pixels');
+            // Изменяем 2% пикселей (унифицировано)
+            const pixelsToModify = Math.floor(data.length / 4 * 0.02);
             
             for (let i = 0; i < pixelsToModify; i++) {
               const index = Math.floor(random() * (data.length / 4)) * 4;
-              const noise = (random() - 0.5) * 0.002 * 255; // Увеличили шум в 10 раз
+              const noise = (random() - 0.5) * 0.001 * 255; // Унифицированный шум
               
               // Изменяем RGB (не Alpha)
               for (let j = 0; j < 3; j++) {
@@ -87,12 +86,8 @@ class CanvasSpoof {
             // Записываем обратно
             ctx.putImageData(imageData, 0, 0);
             
-            console.log('[CanvasSpoof] Noise applied, getting result');
-            
             // Получаем результат
             const result = OrigToDataURL.apply(this, args);
-            
-            console.log('[CanvasSpoof] Result hash:', result.substring(0, 50));
             
             // Сохраняем в кэш
             canvasCache.set(this, result);
@@ -100,7 +95,6 @@ class CanvasSpoof {
             return result;
             
           } catch (e) {
-            console.error('[CanvasSpoof] ERROR:', e.message);
             // Tainted canvas или другая ошибка
             return OrigToDataURL.apply(this, args);
           }
@@ -122,15 +116,23 @@ class CanvasSpoof {
               return OrigToBlob.call(this, callback, ...args);
             }
             
+            // Проверяем на tainted canvas
+            try {
+              ctx.getImageData(0, 0, 1, 1);
+            } catch (e) {
+              // Tainted canvas - не можем модифицировать
+              return OrigToBlob.call(this, callback, ...args);
+            }
+            
             const imageData = ctx.getImageData(0, 0, this.width, this.height);
             const data = imageData.data;
             
             const random = makeRandom(SEED + this.width + this.height);
-            const pixelsToModify = Math.floor(data.length / 4 * 0.005);
+            const pixelsToModify = Math.floor(data.length / 4 * 0.02); // Унифицировано: 2%
             
             for (let i = 0; i < pixelsToModify; i++) {
               const index = Math.floor(random() * (data.length / 4)) * 4;
-              const noise = (random() - 0.5) * 0.0002 * 255;
+              const noise = (random() - 0.5) * 0.001 * 255; // Унифицированный шум
               
               for (let j = 0; j < 3; j++) {
                 data[index + j] = Math.max(0, Math.min(255, data[index + j] + noise));
@@ -160,17 +162,18 @@ class CanvasSpoof {
             
             // Модифицируем напрямую
             const totalPixels = data.length / 4;
-            const modifyCount = Math.floor(totalPixels * 0.1); // 10% пикселей
+            const modifyCount = Math.floor(totalPixels * 0.02); // Унифицировано: 2% пикселей
             
             for (let i = 0; i < modifyCount; i++) {
               const pixelIndex = Math.floor(random() * totalPixels);
               const index = pixelIndex * 4;
               
-              // Изменяем R канал
-              if (data[index] > 0) {
-                data[index] = data[index] - 1;
-              } else if (data[index] < 255) {
-                data[index] = data[index] + 1;
+              // Изменяем RGB каналы с унифицированным шумом
+              for (let j = 0; j < 3; j++) {
+                const noise = (random() - 0.5) * 0.001 * 255;
+                const oldValue = data[index + j];
+                const newValue = Math.max(0, Math.min(255, oldValue + noise));
+                data[index + j] = Math.floor(newValue);
               }
             }
           }
@@ -178,7 +181,7 @@ class CanvasSpoof {
           return imageData;
         };
         
-        console.log('[CanvasSpoof] ✅ Active (seed: ' + SEED + ')');
+        // Canvas fingerprinting protection active
         
       })();
     `;

@@ -18,6 +18,7 @@ class MultiSurfer {
     this.delayMin = options.delayMin || 2000; // 2 секунды
     this.delayMax = options.delayMax || 5000; // 5 секунд
     this.enableTabSwitching = options.enableTabSwitching !== false; // по умолчанию включено
+    this.enableResourceBlocking = options.enableResourceBlocking !== false; // по умолчанию включено
     this.viewTimeMin = options.viewTimeMin || 5; // минимальное время просмотра страницы (секунды)
     this.viewTimeMax = options.viewTimeMax || 10; // максимальное время просмотра страницы (секунды)
     
@@ -482,7 +483,8 @@ class MultiSurfer {
       browserController = new BrowserController(this.profileName, { 
         port: this.port, 
         proxy,
-        enablePlugins: false // Отключаем плагины для серфинга
+        enablePlugins: false, // Отключаем плагины для серфинга
+        enableResourceBlocking: this.enableResourceBlocking // Передаем настройку блокировки ресурсов
       });
 
       // Запускаем браузер

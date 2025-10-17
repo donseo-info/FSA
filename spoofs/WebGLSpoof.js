@@ -8,6 +8,36 @@ class WebGLSpoof {
       renderer: "ANGLE (Intel, Intel(R) UHD Graphics 630 Direct3D11 vs_5_0 ps_5_0, D3D11)" 
     };
     this.seed = options.seed || Math.floor(Math.random() * 1000000);
+    
+    // Генерируем уникальные вариации на основе seed
+    this.generateVariations();
+  }
+  
+  /**
+   * Генерирует уникальные вариации GPU на основе seed
+   */
+  generateVariations() {
+    const vendors = [
+      "Google Inc. (Intel)",
+      "Google Inc. (NVIDIA)", 
+      "Google Inc. (AMD)",
+      "Google Inc. (Microsoft)"
+    ];
+    
+    const renderers = [
+      "ANGLE (Intel, Intel(R) UHD Graphics 630 Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "ANGLE (NVIDIA, NVIDIA GeForce GTX 1660 Super Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "ANGLE (AMD, AMD Radeon RX 6800 XT Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "ANGLE (Intel, Intel(R) UHD Graphics 620 Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "ANGLE (NVIDIA, NVIDIA GeForce RTX 4060 Ti Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    ];
+    
+    // Используем seed для выбора vendor и renderer
+    const vendorIndex = this.seed % vendors.length;
+    const rendererIndex = (this.seed * 7) % renderers.length;
+    
+    this.gpu.vendor = vendors[vendorIndex];
+    this.gpu.renderer = renderers[rendererIndex];
   }
 
   /**
@@ -114,11 +144,17 @@ class WebGLSpoof {
           context.readPixels = function(x, y, width, height, format, type, pixels) {
             originalReadPixels(x, y, width, height, format, type, pixels);
             
-            // Добавляем шум к каждому 100-му пикселю
+            // Добавляем более агрессивный шум для уникальности фингерпринта
             if (pixels && pixels.length) {
-              for (let i = 0; i < pixels.length; i += 100) {
-                const noise = Math.floor(generateNoise() * 255);
+              for (let i = 0; i < pixels.length; i += 50) {
+                const noise = Math.floor(generateNoise() * 10);
                 pixels[i] = Math.min(255, Math.max(0, pixels[i] + noise));
+              }
+              
+              // Добавляем уникальные изменения в первые несколько пикселей
+              for (let i = 0; i < Math.min(10, pixels.length); i++) {
+                const uniqueNoise = Math.floor(random() * 3);
+                pixels[i] = Math.min(255, Math.max(0, pixels[i] + uniqueNoise));
               }
             }
             
