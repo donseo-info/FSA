@@ -39,6 +39,13 @@ export class BannerHandler {
       'span[aria-label="Закрыть"][tabindex="0"]', // Кнопка закрытия с tabindex
       'span[aria-label="Закрыть"][tabindex="0"] svg', // SVG внутри кнопки с tabindex
       
+      // Новый баннер на странице результатов поиска Яндекса
+      'button.Distribution-ButtonClose', // Кнопка закрытия Distribution баннера
+      'button.Distribution-Button.Distribution-ButtonClose', // Полный селектор
+      'button.Onboarding-Close', // Кнопка закрытия Onboarding
+      'button[class*="Distribution-ButtonClose"]', // Любая кнопка с классом Distribution-ButtonClose
+      'button[class*="Onboarding-Close"]', // Любая кнопка с классом Onboarding-Close
+      
       // Общие селекторы
       '.close',
       '.close-btn',
@@ -237,7 +244,14 @@ export class BannerHandler {
         'span[aria-label="Закрыть"]',
         'span[aria-label="Закрыть"][tabindex="0"]',
         'span[aria-label="Закрыть"] svg',
-        'span[aria-label="Закрыть"][tabindex="0"] svg'
+        'span[aria-label="Закрыть"][tabindex="0"] svg',
+        
+        // Новый баннер на странице результатов поиска Яндекса
+        'button.Distribution-ButtonClose',
+        'button.Distribution-Button.Distribution-ButtonClose',
+        'button.Onboarding-Close',
+        'button[class*="Distribution-ButtonClose"]',
+        'button[class*="Onboarding-Close"]'
       ];
       
       for (const selector of closeButtonSelectors) {
@@ -565,7 +579,10 @@ export class BannerHandler {
         'text="Отмена"',
         'text="Cancel"',
         'text="×"',
-        'text="✕"'
+        'text="✕"',
+        // Новый баннер на странице результатов поиска
+        'text="Onboarding"',
+        'text="Distribution"'
       ];
       
       const foundBanners = [];

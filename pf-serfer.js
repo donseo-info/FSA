@@ -834,7 +834,7 @@ class PFSerfer {
         thinkingTime: () => this.thinkingTime(),
         
         // Методы поиска
-        searchOnYandex: (query, targetDomain) => this.searchOnYandex(page, query, targetDomain),
+        searchOnYandex: (query, targetDomain, maxPages) => this.searchOnYandex(page, query, targetDomain, maxPages),
         getSearchResults: () => this.getSearchResults(page),
         findAndClickDomainLink: (targetDomain) => this.findAndClickDomainLink(page, targetDomain),
         
@@ -953,7 +953,7 @@ class PFSerfer {
   /**
    * Выполняет поиск на Яндексе
    */
-  async searchOnYandex(page, query, targetDomain = null) {
+  async searchOnYandex(page, query, targetDomain = null, maxPages = 3) {
     try {
       console.log(`🔍 Выполняем поиск: "${query}"`);
       
@@ -1104,6 +1104,24 @@ class PFSerfer {
         resultsPage = await page.context().waitForEvent('page', { timeout: 10000 });
         console.log('✅ Новая вкладка с результатами поиска открыта');
         
+        // Ждем загрузки результатов поиска
+        console.log('⏳ Ждем загрузки результатов поиска...');
+        await resultsPage.waitForLoadState('domcontentloaded', { timeout: 10000 });
+        await resultsPage.waitForSelector('.serp-item, .organic, .search-result', { timeout: 10000 });
+        console.log('✅ Результаты поиска загружены');
+        
+        // ПЕРЕКЛЮЧАЕМСЯ на новую вкладку с результатами
+        console.log('🔄 Переключаемся на вкладку с результатами поиска...');
+        await resultsPage.bringToFront();
+        
+        // Проверяем URL новой страницы
+        const currentUrl = resultsPage.url();
+        console.log(`📍 Текущий URL: ${currentUrl}`);
+        
+        // Ждем немного для визуального перехода
+        await this.randomDelay(2000, 3000);
+        console.log('✅ Переключились на страницу результатов поиска');
+        
         // Проверяем капчу и баннеры на новой странице результатов
         await this.autoCheckCaptcha(resultsPage, 'поиска');
         if (this.bannerHandler) {
@@ -1111,7 +1129,7 @@ class PFSerfer {
         }
         
       } catch (e) {
-        console.log('⚠️ Не удалось дождаться открытия новой вкладки с результатами');
+        console.log('⚠️ Не удалось дождаться открытия новой вкладки с результатами:', e.message);
       }
       
       await this.randomDelay(2000, 3000);
@@ -1121,7 +1139,7 @@ class PFSerfer {
       // Если указан целевой домен, ищем и кликаем по ссылке
       if (targetDomain) {
         console.log(`🎯 Ищем ссылку с доменом: ${targetDomain}`);
-        const clickResult = await this.findAndClickDomainLink(resultsPage || page, targetDomain);
+        const clickResult = await this.findAndClickDomainLink(resultsPage || page, targetDomain, maxPages);
         return { success: true, query: query, domainClick: clickResult };
       }
       
@@ -1134,46 +1152,455 @@ class PFSerfer {
   }
 
   /**
-   * Ищет и кликает по ссылке с определенным доменом
+   * Ищет и кликает по ссылке с определенным доменом по нескольким страницам
    */
-  async findAndClickDomainLink(page, targetDomain) {
+  async findAndClickDomainLink(page, targetDomain, maxPages = 3) {
     try {
-      console.log(`🔍 Ищем ссылку с доменом: ${targetDomain}`);
+      console.log(`🔍 Ищем ссылку с доменом: ${targetDomain} (максимум ${maxPages} страниц)`);
+      console.log(`📍 Работаем на странице: ${page.url()}`);
       
-      // Ждем загрузки результатов
-      await page.waitForSelector('.serp-item, .organic', { timeout: 10000 });
-      
-      // Получаем все ссылки на странице
-      const links = await page.evaluate((domain) => {
-        const results = [];
-        const linkElements = document.querySelectorAll('a.Link, a.organic__url, .serp-item a, .organic a');
+      for (let currentPage = 1; currentPage <= maxPages; currentPage++) {
+        console.log(`📄 Проверяем страницу ${currentPage}...`);
         
-        for (const link of linkElements) {
-          const href = link.href;
-          const text = link.textContent?.trim() || '';
-          
-          if (href && href.includes(domain) && href.startsWith('http')) {
-            results.push({
-              url: href,
-              text: text,
-              element: link,
-              boundingBox: link.getBoundingClientRect()
-            });
+        // Создаем видимый курсор на каждой странице
+        await page.evaluate(() => {
+          // Удаляем старый курсор если есть
+          const oldCursor = document.getElementById('search-page-cursor');
+          if (oldCursor) {
+            oldCursor.remove();
           }
+          
+          // Создаем новый видимый курсор
+          const cursor = document.createElement('div');
+          cursor.id = 'search-page-cursor';
+          cursor.style.cssText = `
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #ff0000 0%, #ff0000 30%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 999999;
+            transition: all 0.1s ease;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            left: 100px;
+            top: 100px;
+          `;
+          document.body.appendChild(cursor);
+        });
+        
+        // Ждем загрузки результатов
+        await page.waitForSelector('.serp-item, .organic', { timeout: 10000 });
+        
+        // Имитируем естественное чтение страницы
+        await this.simulateNaturalReading(page, 8000 + Math.random() * 6000); // 8-14 секунд чтения
+        
+        // Проверяем капчу после изучения страницы
+        console.log(`🔍 Проверка капчи после изучения страницы ${currentPage}...`);
+        if (this.captchaSolver && typeof this.captchaSolver.checkAndSolveCaptcha === 'function') {
+          try {
+            const captchaResult = await this.captchaSolver.checkAndSolveCaptcha();
+            if (captchaResult && captchaResult.solved) {
+              console.log(`✅ Капча решена на странице ${currentPage}`);
+              await this.randomDelay(2000, 3000);
+            } else {
+              console.log(`✅ Капча не обнаружена на странице ${currentPage}`);
+            }
+          } catch (e) {
+            console.log(`⚠️ Ошибка проверки капчи на странице ${currentPage}: ${e.message}`);
+          }
+        } else {
+          console.log(`⚠️ CaptchaSolver не инициализирован или метод недоступен на странице ${currentPage}`);
         }
         
-        return results;
-      }, targetDomain);
-      
-      if (links.length === 0) {
-        console.log(`❌ Ссылка с доменом ${targetDomain} не найдена`);
-        return { found: false, message: 'Ссылка не найдена' };
+        // Получаем все ссылки на текущей странице
+        const links = await page.evaluate((domain) => {
+          const results = [];
+          const linkElements = document.querySelectorAll('a.Link, a.organic__url, .serp-item a, .organic a');
+          
+          for (const link of linkElements) {
+            const href = link.href;
+            const text = link.textContent?.trim() || '';
+            
+            if (href && href.includes(domain) && href.startsWith('http')) {
+              results.push({
+                url: href,
+                text: text,
+                element: link,
+                boundingBox: link.getBoundingClientRect()
+              });
+            }
+          }
+          
+          return results;
+        }, targetDomain);
+        
+        if (links.length > 0) {
+          console.log(`✅ Найдено ${links.length} ссылок с доменом ${targetDomain} на странице ${currentPage}`);
+          return await this.clickOnFoundLink(page, links[0], targetDomain);
+        }
+        
+        console.log(`❌ Ссылка с доменом ${targetDomain} не найдена на странице ${currentPage}`);
+        
+        // Если это не последняя страница, переходим на следующую
+        if (currentPage < maxPages) {
+          console.log(`⏳ Пауза перед переходом на следующую страницу...`);
+          await this.randomDelay(2000, 3000); // Пауза между страницами
+          
+          const nextPageResult = await this.goToNextPage(page, currentPage + 1);
+          if (!nextPageResult) {
+            console.log(`⚠️ Не удалось перейти на страницу ${currentPage + 1}`);
+            break;
+          }
+        }
       }
       
-      console.log(`✅ Найдено ${links.length} ссылок с доменом ${targetDomain}`);
+      console.log(`❌ Ссылка с доменом ${targetDomain} не найдена на всех ${maxPages} страницах`);
+      return { found: false, message: `Ссылка не найдена на ${maxPages} страницах` };
       
-      // Выбираем первую найденную ссылку
-      const targetLink = links[0];
+    } catch (error) {
+      console.error('❌ Ошибка поиска по страницам:', error.message);
+      return { found: false, message: `Ошибка: ${error.message}` };
+    }
+  }
+
+  /**
+   * Переходит на следующую страницу поиска
+   */
+  async goToNextPage(page, pageNumber) {
+    try {
+      console.log(`🔄 Переходим на страницу ${pageNumber}...`);
+      
+      // Ищем кнопку перехода на следующую страницу
+      const nextPageSelector = `a[aria-label="Страница ${pageNumber}"], a.Pager-Item[aria-label="Страница ${pageNumber}"]`;
+      
+      // Ждем появления кнопки пагинации
+      await page.waitForSelector('.Pager-Item, .pager__item', { timeout: 5000 });
+      
+      // Проверяем, есть ли кнопка для нужной страницы
+      const nextPageButton = await page.locator(nextPageSelector).first();
+      const isVisible = await nextPageButton.isVisible({ timeout: 2000 });
+      
+      if (!isVisible) {
+        console.log(`❌ Кнопка для страницы ${pageNumber} не найдена`);
+        return false;
+      }
+      
+      console.log(`✅ Найдена кнопка для страницы ${pageNumber}`);
+      
+      // Проверяем и закрываем баннеры перед кликом
+      console.log('🎯 Проверяем баннеры перед переходом на следующую страницу...');
+      if (this.bannerHandler) {
+        const bannerResult = await this.bannerHandler.closeAllBanners();
+        if (bannerResult.closed > 0) {
+          console.log(`✅ Закрыто ${bannerResult.closed} баннеров перед переходом`);
+          await this.randomDelay(1000, 1500);
+        }
+      }
+      
+      // Естественный подвод курсора к кнопке пагинации
+      const box = await nextPageButton.boundingBox();
+      if (box) {
+        const targetX = box.x + box.width / 2;
+        const targetY = box.y + box.height / 2;
+        
+        console.log(`🎯 Подводим курсор к кнопке страницы ${pageNumber}: (${Math.round(targetX)}, ${Math.round(targetY)})`);
+        
+        // Создаем видимый курсор на странице результатов поиска
+        await page.evaluate(() => {
+          // Удаляем старый курсор если есть
+          const oldCursor = document.getElementById('search-page-cursor');
+          if (oldCursor) {
+            oldCursor.remove();
+          }
+          
+          // Создаем новый видимый курсор
+          const cursor = document.createElement('div');
+          cursor.id = 'search-page-cursor';
+          cursor.style.cssText = `
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #ff0000 0%, #ff0000 30%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 999999;
+            transition: all 0.1s ease;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+          `;
+          document.body.appendChild(cursor);
+        });
+        
+        // Создаем SearchPageCursor для естественных движений
+        let searchCursor = null;
+        try {
+          searchCursor = new SearchPageCursor(page);
+          await searchCursor.init();
+          console.log('✅ SearchPageCursor инициализирован для перехода на страницу');
+        } catch (e) {
+          console.log('⚠️ Не удалось инициализировать SearchPageCursor:', e.message);
+        }
+        
+        // Естественное движение к кнопке с кривой Безье
+        // Используем текущую позицию курсора, а не случайную
+        const startX = searchCursor ? searchCursor.currentX : (100 + Math.random() * 200);
+        const startY = searchCursor ? searchCursor.currentY : (100 + Math.random() * 200);
+        
+        console.log(`🎯 Начинаем естественное движение от (${Math.round(startX)}, ${Math.round(startY)}) к (${Math.round(targetX)}, ${Math.round(targetY)})`);
+        
+        // Создаем контрольные точки для кривой Безье
+        const controlX1 = startX + (targetX - startX) * 0.3 + (Math.random() - 0.5) * 100;
+        const controlY1 = startY + (targetY - startY) * 0.3 + (Math.random() - 0.5) * 100;
+        const controlX2 = startX + (targetX - startX) * 0.7 + (Math.random() - 0.5) * 100;
+        const controlY2 = startY + (targetY - startY) * 0.7 + (Math.random() - 0.5) * 100;
+        
+        const steps = 60; // Больше шагов для более плавной кривой
+        
+        for (let i = 0; i <= steps; i++) {
+          const t = i / steps;
+          
+          // Кривая Безье
+          const currentX = Math.pow(1-t, 3) * startX + 
+                          3 * Math.pow(1-t, 2) * t * controlX1 + 
+                          3 * (1-t) * Math.pow(t, 2) * controlX2 + 
+                          Math.pow(t, 3) * targetX;
+          
+          const currentY = Math.pow(1-t, 3) * startY + 
+                          3 * Math.pow(1-t, 2) * t * controlY1 + 
+                          3 * (1-t) * Math.pow(t, 2) * controlY2 + 
+                          Math.pow(t, 3) * targetY;
+          
+          // Добавляем небольшие случайные отклонения
+          const jitterX = (Math.random() - 0.5) * 2;
+          const jitterY = (Math.random() - 0.5) * 2;
+          
+          const finalX = currentX + jitterX;
+          const finalY = currentY + jitterY;
+          
+          await page.mouse.move(finalX, finalY, { steps: 1 });
+          
+          // Обновляем видимый курсор
+          await page.evaluate(({x, y}) => {
+            const cursor = document.getElementById('search-page-cursor');
+            if (cursor) {
+              cursor.style.left = x + 'px';
+              cursor.style.top = y + 'px';
+            }
+          }, {x: finalX, y: finalY});
+          
+          // Переменная задержка - быстрее в начале, медленнее в конце
+          const delay = 30 + (t * 50) + Math.random() * 30;
+          await this.randomDelay(delay, delay + 20);
+        }
+        
+        await this.randomDelay(500, 800);
+        
+        // Кликаем по кнопке
+        await nextPageButton.click();
+        console.log(`👆 Кликнули по кнопке страницы ${pageNumber}`);
+        
+        // Ждем загрузки новой страницы (уменьшаем timeout)
+        try {
+          await page.waitForLoadState('domcontentloaded', { timeout: 5000 });
+          
+          // Проверяем капчу после перехода на новую страницу
+          console.log(`🔍 Проверка капчи после перехода на страницу ${pageNumber}...`);
+          if (this.captchaSolver && typeof this.captchaSolver.checkAndSolveCaptcha === 'function') {
+            try {
+              const captchaResult = await this.captchaSolver.checkAndSolveCaptcha();
+              if (captchaResult && captchaResult.solved) {
+                console.log(`✅ Капча решена на странице ${pageNumber}`);
+                await this.randomDelay(2000, 3000);
+              } else {
+                console.log(`✅ Капча не обнаружена на странице ${pageNumber}`);
+              }
+            } catch (e) {
+              console.log(`⚠️ Ошибка проверки капчи на странице ${pageNumber}: ${e.message}`);
+            }
+          } else {
+            console.log(`⚠️ CaptchaSolver не инициализирован или метод недоступен на странице ${pageNumber}`);
+          }
+          
+        // Имитируем естественное чтение новой страницы
+        await this.simulateNaturalReading(page, 6000 + Math.random() * 4000); // 6-10 секунд чтения
+          
+          // Обновляем видимый курсор после скролла
+          await page.evaluate(() => {
+            const cursor = document.getElementById('search-page-cursor');
+            if (cursor) {
+              cursor.style.left = (100 + Math.random() * 200) + 'px';
+              cursor.style.top = (100 + Math.random() * 200) + 'px';
+            }
+          });
+          
+          console.log(`✅ Успешно перешли на страницу ${pageNumber} и изучили результаты`);
+          return true;
+        } catch (e) {
+          console.log(`⚠️ Таймаут загрузки страницы ${pageNumber}, но продолжаем...`);
+          await this.randomDelay(2000, 3000);
+          return true; // Продолжаем работу даже если таймаут
+        }
+      }
+      
+      return false;
+      
+    } catch (error) {
+      console.error(`❌ Ошибка перехода на страницу ${pageNumber}:`, error.message);
+      return false;
+    }
+  }
+
+  /**
+   * Имитирует естественное чтение страницы с реалистичными движениями мыши
+   */
+  async simulateNaturalReading(page, duration = 8000) {
+    try {
+      console.log(`📖 Имитируем естественное чтение страницы (${Math.round(duration/1000)} сек)...`);
+      
+      let searchCursor = null;
+      try {
+        searchCursor = new SearchPageCursor(page);
+        await searchCursor.init();
+        console.log('✅ SearchPageCursor инициализирован для чтения');
+      } catch (e) {
+        console.log('⚠️ Не удалось инициализировать SearchPageCursor:', e.message);
+        return;
+      }
+      
+      const startTime = Date.now();
+      const endTime = startTime + duration;
+      
+      // Получаем размеры страницы
+      const viewport = page.viewportSize();
+      const pageHeight = await page.evaluate(() => document.body.scrollHeight);
+      
+      // Получаем текущую позицию курсора
+      let currentX = searchCursor.currentX || viewport.width / 2;
+      let currentY = searchCursor.currentY || viewport.height / 2;
+      
+      console.log(`🎯 Начальная позиция курсора: (${Math.round(currentX)}, ${Math.round(currentY)})`);
+      
+      // Обновляем видимый курсор
+      await page.evaluate(({x, y}) => {
+        const cursor = document.getElementById('search-page-cursor');
+        if (cursor) {
+          cursor.style.left = x + 'px';
+          cursor.style.top = y + 'px';
+        }
+      }, {x: currentX, y: currentY});
+      
+      let currentScroll = 0;
+      let actionCount = 0;
+      
+      // Фаза 1: Быстрый просмотр всех результатов (первые 30% времени)
+      const quickScanEndTime = startTime + duration * 0.3;
+      console.log(`👀 Фаза 1: Быстрый просмотр результатов...`);
+      
+      while (Date.now() < quickScanEndTime) {
+        actionCount++;
+        console.log(`🌊 Быстрый скролл (действие ${actionCount})...`);
+        
+        // Быстро скроллим вниз
+        const scrollAmount = 300 + Math.random() * 400;
+        await page.mouse.wheel(0, scrollAmount);
+        currentScroll += scrollAmount;
+        
+        // Небольшие движения мыши во время быстрого скролла
+        const moveX = (Math.random() - 0.5) * 200;
+        const moveY = (Math.random() - 0.5) * 100;
+        currentX = Math.max(150, Math.min(viewport.width - 150, currentX + moveX));
+        currentY = Math.max(150, Math.min(viewport.height - 150, currentY + moveY));
+        
+        await searchCursor.moveSmooth(searchCursor.currentX, searchCursor.currentY, currentX, currentY, 200);
+        searchCursor.currentX = currentX;
+        searchCursor.currentY = currentY;
+        
+        await this.randomDelay(300, 600);
+      }
+      
+      // Возвращаемся к началу для внимательного чтения
+      console.log(`🔄 Возвращаемся к началу для внимательного чтения...`);
+      const returnScroll = currentScroll * 0.8;
+      await page.mouse.wheel(0, -returnScroll);
+      currentScroll -= returnScroll;
+      
+      // Фаза 2: Внимательное чтение заголовков (оставшиеся 70% времени)
+      console.log(`📖 Фаза 2: Внимательное чтение заголовков...`);
+      
+      while (Date.now() < endTime) {
+        actionCount++;
+        
+        // Имитируем чтение заголовков - движения мыши к тексту
+        console.log(`📝 Читаем заголовок (действие ${actionCount})...`);
+        
+        // Движения в области заголовков (левая часть экрана)
+        const textMovements = 2 + Math.random() * 3;
+        for (let i = 0; i < textMovements; i++) {
+          // Движения в области текста результатов поиска
+          const targetX = 200 + Math.random() * 600; // Левая часть экрана
+          const targetY = 200 + Math.random() * 400; // Область заголовков
+          
+          await searchCursor.moveSmooth(searchCursor.currentX, searchCursor.currentY, targetX, targetY, 600 + Math.random() * 400);
+          searchCursor.currentX = targetX;
+          searchCursor.currentY = targetY;
+          
+          // Пауза для "чтения" заголовка
+          await this.randomDelay(800, 1500);
+        }
+        
+        // Иногда скроллим немного вниз для следующего заголовка
+        if (Math.random() < 0.4) {
+          console.log(`📜 Переходим к следующему заголовку...`);
+          const smallScroll = 100 + Math.random() * 200;
+          await page.mouse.wheel(0, smallScroll);
+          currentScroll += smallScroll;
+          
+          // Движение мыши при переходе к следующему заголовку
+          const moveX = (Math.random() - 0.5) * 150;
+          currentX = Math.max(150, Math.min(viewport.width - 150, currentX + moveX));
+          
+          await searchCursor.moveSmooth(searchCursor.currentX, searchCursor.currentY, currentX, currentY, 300);
+          searchCursor.currentX = currentX;
+          searchCursor.currentY = currentY;
+          
+          await this.randomDelay(400, 800);
+        }
+        
+        // Пауза между заголовками
+        await this.randomDelay(1000, 2000);
+        
+        // Если доскроллили далеко, возвращаемся к началу
+        if (currentScroll > pageHeight * 0.6) {
+          console.log(`🔄 Возвращаемся к началу для повторного просмотра...`);
+          
+          const returnScroll = currentScroll * 0.7;
+          await page.mouse.wheel(0, -returnScroll);
+          currentScroll -= returnScroll;
+          
+          // Движение мыши при возврате
+          const moveX = (Math.random() - 0.5) * 200;
+          currentX = Math.max(150, Math.min(viewport.width - 150, currentX + moveX));
+          
+          await searchCursor.moveSmooth(searchCursor.currentX, searchCursor.currentY, currentX, currentY, 400);
+          searchCursor.currentX = currentX;
+          searchCursor.currentY = currentY;
+          
+          await this.randomDelay(1500, 2500);
+        }
+      }
+      
+      console.log(`✅ Естественное чтение завершено (${actionCount} действий)`);
+      
+    } catch (error) {
+      console.error('❌ Ошибка имитации чтения:', error.message);
+    }
+  }
+
+  /**
+   * Кликает по найденной ссылке с естественным поведением
+   */
+  async clickOnFoundLink(page, targetLink, targetDomain) {
+    try {
       console.log(`🎯 Выбрана ссылка: ${targetLink.url}`);
       
       // Вычисляем координаты цели
@@ -1343,7 +1770,7 @@ class PFSerfer {
       };
       
     } catch (error) {
-      console.error('❌ Ошибка поиска и клика по домену:', error.message);
+      console.error('❌ Ошибка клика по ссылке:', error.message);
       return { found: false, error: error.message };
     }
   }
