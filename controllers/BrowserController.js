@@ -27,6 +27,11 @@ class BrowserController {
     
     // Настройка блокировки ресурсов
     this.enableResourceBlocking = options.enableResourceBlocking !== false; // по умолчанию включено
+    this.blockingConfig = options.blockingConfig || {
+      useYandexRules: false,
+      blockRulesFile: 'block-rules.txt',
+      allowRulesFile: 'allow-rules.txt'
+    };
     
     // Загружаем правила блокировки только если включена блокировка
     if (this.enableResourceBlocking) {
@@ -97,8 +102,11 @@ class BrowserController {
    * Загружает правила блокировки из файла
    */
   loadBlockRules() {
+    if (!this.blockingConfig || !this.blockingConfig.blockRulesFile) {
+      return [];
+    }
     try {
-      const blockPath = path.resolve('./configs/block-rules.txt');
+      const blockPath = path.resolve(this.blockingConfig.blockRulesFile);
       const content = fs.readFileSync(blockPath, 'utf-8');
       return content.split('\n')
         .map(line => line.trim())
@@ -115,7 +123,10 @@ class BrowserController {
    */
   loadAllowRules() {
     try {
-      const allowPath = path.resolve('./configs/allow-rules.txt');
+      if (!this.blockingConfig || !this.blockingConfig.allowRulesFile) {
+        return [];
+      }
+      const allowPath = path.resolve(this.blockingConfig.allowRulesFile);
       const content = fs.readFileSync(allowPath, 'utf-8');
       return content.split('\n')
         .map(line => line.trim())
@@ -322,32 +333,22 @@ class BrowserController {
     // Создаем и загружаем расширения
     const extensions = [];
     
-    // WebRTC расширение
-    if (this.spoofs.webrtc) {
+    // WebRTC расширение - только когда используется прокси
+    if (this.proxy && this.proxy.server && this.spoofs.webrtc) {
       const extensionPath = this.spoofs.webrtc.createExtension();
       if (extensionPath) {
         extensions.push(extensionPath);
+        console.log(`🔌 Загружаем WebRTC расширение для прокси`);
       }
     }
     
-    // SEO Google расширение
-    if (this.enablePlugins && this.spoofs.seoGoogle) {
-      const extensionPath = this.spoofs.seoGoogle.createExtension();
-      if (extensionPath) {
-        extensions.push(extensionPath);
-      }
-    }
-    
-    // Плагины теперь загружаются из конфига профиля
-    
-    // Загружаем плагины из конфига профиля
-    this.loadProfilePlugins(extensions);
-    
-    // Загружаем все расширения
+    // Загружаем только WebRTC расширение
     if (extensions.length > 0) {
       const extensionArg = `--load-extension=${extensions.join(',')}`;
       console.log(`🔌 Загружаем расширения: ${extensionArg}`);
       chromeArgs.push(extensionArg);
+    } else {
+      console.log(`🔌 Расширения не загружаются`);
     }
 
     // Добавляем только безопасные аргументы
@@ -357,14 +358,14 @@ class BrowserController {
 
     this.chromeProcess = spawn(this.chromePath, chromeArgs, {
       detached: true,
-      stdio: 'ignore',
-      windowsHide: true  // Скрываем окно на Windows
+      stdio: 'ignore'
     });
     
     this.chromeProcess.unref();
     console.log('⏳ Запуск Chrome...\n');
     await new Promise(resolve => setTimeout(resolve, 5000));
   }
+
 
   /**
    * Подключается к Chrome через CDP
@@ -375,22 +376,29 @@ class BrowserController {
     this.browser = await chromium.connectOverCDP(`http://localhost:${this.port}`);
     this.context = this.browser.contexts()[0];
     
-    // Блокируем попапы и новые окна (но не наши собственные страницы)
-    this.context.on('page', (page) => {
-      // Даем странице время инициализироваться
-      setTimeout(async () => {
-        try {
-          const url = page.url();
-          // Блокируем только если это не about:blank (наши новые страницы)
-          if (url !== 'about:blank' && !url.startsWith('chrome-extension://')) {
-            console.log(`🚫 Блокируем попап: ${url}`);
-            await page.close();
-          }
-        } catch (error) {
-          // Игнорируем ошибки закрытия
-        }
-      }, 100);
-    });
+    // Блокируем попапы и новые окна (но не наши собственные страницы и не Яндекс)
+        this.context.on('page', (page) => {
+          // Даем странице время инициализироваться
+          setTimeout(async () => {
+            try {
+              const url = page.url();
+              // Разрешаем все переходы с Яндекса и наши собственные страницы
+              if (url === 'about:blank' || 
+                  url.startsWith('chrome-extension://') ||
+                  url.includes('yandex.ru') ||
+                  url.includes('dzen.ru') ||
+                  // Если это внешняя ссылка (не Яндекс), разрешаем её
+                  (!url.includes('yandex.ru') && !url.includes('dzen.ru') && url.startsWith('http'))) {
+                console.log(`✅ Разрешаем переход: ${url}`);
+              } else {
+                console.log(`🚫 Блокируем попап: ${url}`);
+                await page.close();
+              }
+            } catch (error) {
+              // Игнорируем ошибки закрытия
+            }
+          }, 100);
+        });
     
     const existingPages = this.context.pages();
     console.log(`📄 Найдено страниц: ${existingPages.length}`);
@@ -576,8 +584,13 @@ class BrowserController {
    */
   async newPage() {
     const page = await this.context.newPage();
+    
+    // Устанавливаем размер viewport из конфигурации профиля
+    const { width, height } = this.config.resolution;
+    await page.setViewportSize({ width, height });
+    
     await this.applySpoofs(page);
-    console.log(`\n📄 Новая страница создана\n`);
+    console.log(`\n📄 Новая страница создана (${width}x${height})\n`);
     return page;
   }
 
