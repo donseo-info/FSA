@@ -17,22 +17,126 @@ async function humanTypeText(page, text) {
   }
 }
 
-async function smartYandexSearch(baseQuery = 'взять кредит под залог автомобиля', targetDomain = 'sberbank.ru', additionalWords = ['sberbank', 'сбербанк', 'банк']) {
-  const serfer = new PFSerfer('bot-373476829', {
+async function smartYandexSearch(baseQuery = 'отказное письмо как получить', targetDomain = 'alfagost.ru', additionalWords = ['альфагост'], regionLr = '213', profileName = 'bot-332092780') {
+  const serfer = new PFSerfer(profileName, {
     blockRulesFile: 'configs/yandex-block.txt',
     allowRulesFile: 'configs/yandex-block-razreshit.txt',
     humanlikeMode: true, // ВКЛЮЧАЕМ ЭМУЛЯЦИИ
     realisticCursor: true, // Включаем эмуляции мыши
     realisticScroll: true, // Включаем эмуляции скролла
-    captchaSolver: true, // Включаем капчу
-    bannerHandler: true // Включаем баннеры
+    enableAutoSolve: true, // Включаем капчу
+    bannerHandler: true, // Включаем баннеры
+    regionLr: regionLr // Передаем параметр региона
   });
   
   try {
     const browser = await serfer.start();
     
+    // Получаем разрешение профиля из метаданных
+    const ProfileManager = (await import('./ProfileManager.js')).default;
+    const profileManager = new ProfileManager();
+    const metadata = profileManager.loadMetadata();
+    const profileConfig = metadata.profiles[profileName];
+    
+    if (!profileConfig || !profileConfig.resolution) {
+      console.log('⚠️ Не удалось получить разрешение профиля, используем стандартное 1920x1080');
+      var profileWidth = 1920;
+      var profileHeight = 1080;
+    } else {
+      var profileWidth = profileConfig.resolution.width;
+      var profileHeight = profileConfig.resolution.height;
+    }
+    
+    console.log(`📐 Разрешение профиля: ${profileWidth}x${profileHeight}`);
+    
+    // Устанавливаем viewport ДО открытия вкладки через addInitScript
+    console.log('📐 Устанавливаем viewport через addInitScript...');
+    await browser.page.addInitScript((width, height) => {
+      // Устанавливаем viewport сразу при загрузке страницы
+      if (window.screen) {
+        window.screen.width = width;
+        window.screen.height = height;
+      }
+      // Также устанавливаем через CSS viewport
+      const viewport = document.querySelector('meta[name="viewport"]');
+      if (viewport) {
+        viewport.setAttribute('content', `width=${width}, height=${height}, initial-scale=1`);
+      } else {
+        const meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = `width=${width}, height=${height}, initial-scale=1`;
+        document.head.appendChild(meta);
+      }
+    }, profileWidth, profileHeight);
+    
+    // Устанавливаем куки региона для dzen.ru и yandex.ru на основе анализа
+    try {
+      // Устанавливаем куки для dzen.ru
+      await browser.context.addCookies([
+        { name: 'ask_city', value: '+', domain: 'dzen.ru', path: '/', httpOnly: false, secure: false, sameSite: 'Lax' },
+        { name: 'zen_gid', value: regionLr, domain: '.dzen.ru', path: '/', httpOnly: false, secure: false, sameSite: 'Lax' },
+        //{ name: 'zen_vk_gid', value: '5506', domain: '.dzen.ru', path: '/', httpOnly: false, secure: false, sameSite: 'Lax' }
+      ]);
+      console.log(`🍪 Куки для dzen.ru установлены: ask_city=+, zen_gid=${regionLr}, zen_vk_gid=5506`);
+      
+      // Устанавливаем куки для yandex.ru на основе анализа теста
+      await browser.context.addCookies([
+        { name: 'yandex_gid', value: regionLr, domain: '.yandex.ru', path: '/', httpOnly: false, secure: true, sameSite: 'None' },
+        { name: 'yandex_gid', value: regionLr, domain: '.ya.ru', path: '/', httpOnly: false, secure: true, sameSite: 'None' },
+        { name: 'my', value: 'YysBgNUA', domain: '.yandex.ru', path: '/', httpOnly: false, secure: true, sameSite: 'None' },
+        { name: 'my', value: 'YysBgNUA', domain: '.ya.ru', path: '/', httpOnly: false, secure: true, sameSite: 'None' }
+      ]);
+      console.log(`🍪 Куки для yandex.ru установлены: yandex_gid=${regionLr}, my=YysBgNUA`);
+      
+           // Перехватываем редиректы и исправляем lr в URL на уровне контекста
+           try {
+             // Устанавливаем перехват на уровне контекста браузера
+             await browser.context.route('**/*', async (route) => {
+               const request = route.request();
+               const url = request.url();
+               
+               console.log(`🔍 Перехвачен запрос: ${url}`);
+               
+               // Перехватываем переходы с Dzen на Yandex
+               if (url.includes('yandex.ru/search') && url.includes('search_source=dzen_desktop_safe')) {
+                 if (!url.includes('lr=')) {
+                   // Добавляем lr параметр если его нет
+                   const newUrl = url + `&lr=${regionLr}`;
+                   console.log(`🔄 Перехватываем route с Dzen: ${url} -> ${newUrl}`);
+                   await route.continue({ url: newUrl });
+                   return;
+                 } else if (!url.includes(`lr=${regionLr}`)) {
+                   // Заменяем lr параметр если он неправильный
+                   const newUrl = url.replace(/lr=\d+/, `lr=${regionLr}`);
+                   console.log(`🔄 Перехватываем route с Dzen: ${url} -> ${newUrl}`);
+                   await route.continue({ url: newUrl });
+                   return;
+                 }
+               }
+               // Перехватываем обычные поиски Яндекса
+               else if (url.includes('yandex.ru/search') && url.includes('lr=') && !url.includes(`lr=${regionLr}`)) {
+                 const newUrl = url.replace(/lr=\d+/, `lr=${regionLr}`);
+                 console.log(`🔄 Перехватываем route: ${url} -> ${newUrl}`);
+                 await route.continue({ url: newUrl });
+                 return;
+               }
+               
+               // Продолжаем обычный запрос
+               await route.continue();
+             });
+             
+             console.log(`✅ Перехват route установлен на уровне контекста браузера`);
+           } catch (error) {
+             console.log(`⚠️ Ошибка установки перехвата route: ${error.message}`);
+           }
+    } catch (_) {}
+    
     console.log('🌐 Переходим на yandex.ru...');
     await browser.navigateToPage('https://yandex.ru');
+    
+    // Проверяем, что viewport применился
+    const viewport = await browser.page.viewportSize();
+    console.log('✅ Viewport после перехода:', viewport);
     
     console.log(`🔍 Начинаем умный поиск для домена: ${targetDomain}`);
     console.log(`📝 Базовый запрос: "${baseQuery}"`);
@@ -47,6 +151,8 @@ async function smartYandexSearch(baseQuery = 'взять кредит под з�
       console.log('✅ Успешно найдена и открыта ссылка с доменом sberbank.ru');
       console.log('🔗 URL:', searchResult.domainClick.url);
       console.log('📝 Текст:', searchResult.domainClick.text);
+      console.log('🎯 Задача выполнена успешно! Закрываем браузер...');
+      await browser.close();
       return searchResult;
     }
     
@@ -154,6 +260,8 @@ async function smartYandexSearch(baseQuery = 'взять кредит под з�
         console.log(`🔗 URL: ${searchResult.domainClick.url}`);
         console.log(`📝 Текст: ${searchResult.domainClick.text}`);
         console.log(`🎯 Найден с запросом: "${expandedQuery}"`);
+        console.log('🎯 Задача выполнена успешно! Закрываем браузер...');
+        await browser.close();
         return searchResult;
       }
       
@@ -167,20 +275,34 @@ async function smartYandexSearch(baseQuery = 'взять кредит под з�
       console.log(`  ${i + 2}. "${baseQuery} ${word}"`);
     });
     
+    console.log('🔄 Закрываем браузер...');
+    await browser.close();
     return { success: false, message: 'Домен не найден ни в одном поиске' };
     
   } catch (error) {
     console.error('❌ Ошибка:', error.message);
+    try {
+      await browser.close();
+    } catch (e) {
+      console.log('⚠️ Ошибка при закрытии браузера:', e.message);
+    }
     return { success: false, error: error.message };
   }
 }
 
-// Примеры использования:
+// Захардкоженные параметры для тестирования (избегаем проблем с кодировкой командной строки)
+const baseQuery = 'отказное письмо как получить';
+const targetDomain = 'alfagost.ru';
+const additionalWords = ['альфагост'];
+const regionLr = '213';
+const profileName = 'bot-332092780';
 
-// 1. Поиск Сбербанка с кредитами
-smartYandexSearch('взять кредит под залог автомобиля', 'sberbank.ru', ['sberbank', 'сбербанк', 'банк']);
+console.log(`🚀 Запуск поиска:`);
+console.log(`📝 Базовый запрос: "${baseQuery}"`);
+console.log(`🎯 Целевой домен: ${targetDomain}`);
+console.log(`🔍 Дополнительные слова: ${additionalWords.join(', ')}`);
+console.log(`🌍 Регион (lr): ${regionLr}`);
+console.log(`👤 Профиль: ${profileName}`);
 
-// 2. Поиск другого банка (раскомментируйте нужный)
-// smartYandexSearch('взять кредит под залог автомобиля', 'gazprombank.ru', ['gazprombank', 'газпромбанк', 'банк']);
-// smartYandexSearch('взять кредит под залог автомобиля', 'vtb.ru', ['vtb', 'втб', 'банк']);
-// smartYandexSearch('взять кредит под залог автомобиля', 'alfabank.ru', ['alfabank', 'альфабанк', 'банк']);
+// Запускаем поиск с захардкоженными параметрами
+smartYandexSearch(baseQuery, targetDomain, additionalWords, regionLr, profileName);

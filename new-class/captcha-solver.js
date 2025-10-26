@@ -206,18 +206,83 @@ async findCaptchaImagesWithRetry(page, maxRetries = 10) {
 
   // Обработка капчи на странице Яндекса
   async handleYandexCaptcha(page, cursor) {
-    console.log('⚠️ Обнаружена капча Яндекса');
     
     try {
-      // Клик по чекбоксу
+      console.log('⚠️ Обнаружена капча Яндекса');
+      
+      // Отладочная информация - проверяем доступные селекторы
+      console.log('🔍 Отладка: ищем доступные селекторы капчи...');
+      const possibleSelectors = [
+        '.CheckboxCaptcha-Anchor',
+        '.Captcha-Anchor', 
+        '.captcha-anchor',
+        '[data-captcha]',
+        '.captcha-checkbox',
+        '.checkbox-captcha',
+        'input[type="checkbox"]',
+        '.captcha',
+        '#captcha',
+        'button[aria-label*="капч"]',
+        'button[aria-label*="captcha"]',
+        'button',
+        'input',
+        '.button',
+        '[role="button"]'
+      ];
+      
+      for (const selector of possibleSelectors) {
+        const count = await page.locator(selector).count();
+        if (count > 0) {
+          console.log(`✅ Найден селектор: ${selector} (${count} элементов)`);
+          const isVisible = await page.locator(selector).first().isVisible().catch(() => false);
+          console.log(`   Видимый: ${isVisible}`);
+        } else {
+          console.log(`❌ Селектор не найден: ${selector}`);
+        }
+      }
+      
+      // Прокручиваем к элементу капчи и кликаем по нему
+      console.log('📍 Прокручиваем к элементу капчи...');
+      await page.locator('.CheckboxCaptcha-Anchor').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(1000);
+      
+      console.log('🎯 Подводим курсор к элементу капчи...');
       await cursor.moveTo('.CheckboxCaptcha-Anchor', 'fast');
       await page.waitForTimeout(2000);
       
       console.log('👆 Кликаем по чекбоксу...');
-      await cursor.click('.CheckboxCaptcha-Anchor', { 
-        thinking: true,
-        speed: 'fast' 
-      });
+      
+      // Получаем координаты чекбокса для плавного движения
+      const checkboxBox = await page.locator('.CheckboxCaptcha-Anchor').boundingBox();
+      if (checkboxBox) {
+        const targetX = checkboxBox.x + checkboxBox.width / 2;
+        const targetY = checkboxBox.y + checkboxBox.height / 2;
+        
+        // Плавно двигаем курсор к чекбоксу
+        await cursor.moveSmooth(cursor.currentX, cursor.currentY, targetX, targetY, 500);
+        
+        // Принудительно обновляем визуальный курсор
+        await page.evaluate(({ x, y }) => {
+          const cursor = document.getElementById('realistic-cursor');
+          if (cursor) {
+            cursor.style.left = x + 'px';
+            cursor.style.top = y + 'px';
+          }
+        }, { x: targetX, y: targetY });
+        
+        // Кликаем в координаты
+        await page.mouse.click(targetX, targetY);
+        
+        // Обновляем позицию курсора
+        cursor.currentX = targetX;
+        cursor.currentY = targetY;
+      } else {
+        // Fallback к обычному клику
+        await cursor.click('.CheckboxCaptcha-Anchor', { 
+          thinking: true,
+          speed: 'fast' 
+        });
+      }
 
       console.log('⏳ Ждем проверку...');
       
@@ -535,6 +600,14 @@ async findCaptchaImagesWithRetry(page, maxRetries = 10) {
 
   // Полный цикл: обработка + автоматическое решение
   async solveAndSubmit(page, cursor) {
+    // Сначала проверяем, есть ли капча на странице
+    const hasCaptcha = await page.locator('.CheckboxCaptcha-Anchor').count() > 0;
+    if (!hasCaptcha) {
+      console.log('✅ Капча не обнаружена на странице');
+      return false;
+    }
+    
+    console.log('⚠️ Обнаружена капча Яндекса');
     // Обрабатываем капчу
     const result = await this.handleYandexCaptcha(page, cursor);
     

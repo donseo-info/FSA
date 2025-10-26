@@ -46,6 +46,13 @@ export class BannerHandler {
       'button[class*="Distribution-ButtonClose"]', // Любая кнопка с классом Distribution-ButtonClose
       'button[class*="Onboarding-Close"]', // Любая кнопка с классом Onboarding-Close
       
+      // Баннер "Установить Яндекс Браузер?"
+      '.Distribution-SplashScreenModal', // Модальное окно установки браузера
+      '.Distribution-SplashScreenModalScene', // Сцена модального окна
+      'button[aria-hidden="true"][tabindex="-1"]', // Кнопка закрытия с aria-hidden
+      'button.Distribution-ButtonClose.Distribution-ButtonClose_view_cross', // Кнопка закрытия крестиком
+      '.Modal_visible .Distribution-ButtonClose', // Кнопка закрытия в видимом модальном окне
+      
       // Общие селекторы
       '.close',
       '.close-btn',
@@ -231,6 +238,23 @@ export class BannerHandler {
     try {
       const closeButtons = [];
       
+      // Отладочная информация
+      const currentUrl = await this.page.url();
+      console.log(`🔍 BannerHandler ищет баннеры на странице: ${currentUrl}`);
+      
+      // Проверяем, есть ли баннер на странице (как в консоли)
+      const bannerCheck = await this.page.evaluate(() => {
+        const button = document.querySelector('button[aria-label="Нет, спасибо"][aria-hidden="true"][tabindex="-1"]');
+        const modal = document.querySelector('.Distribution-SplashScreenModal');
+        return {
+          buttonFound: !!button,
+          modalFound: !!modal,
+          buttonVisible: button ? button.getBoundingClientRect().width > 0 : false,
+          modalVisible: modal ? modal.getBoundingClientRect().width > 0 : false
+        };
+      });
+      console.log(`🔍 Проверка баннера на странице:`, bannerCheck);
+      
       // Сначала ищем кнопки закрытия с классом Distribution-ButtonClose
       const closeButtonSelectors = [
         '.Distribution-ButtonClose',
@@ -251,27 +275,41 @@ export class BannerHandler {
         'button.Distribution-Button.Distribution-ButtonClose',
         'button.Onboarding-Close',
         'button[class*="Distribution-ButtonClose"]',
-        'button[class*="Onboarding-Close"]'
+        'button[class*="Onboarding-Close"]',
+        
+        // Баннер "Установить Яндекс Браузер?" - только специфичные селекторы
+        'button.Distribution-ButtonClose.Distribution-ButtonClose_view_cross',
+        '.Modal_visible .Distribution-ButtonClose',
+        'button[aria-label="Нет, спасибо"][aria-hidden="true"][tabindex="-1"]',
+        'button.Distribution-SplashScreenModalCloseButtonBeside',
+        'button[class*="Distribution-SplashScreenModalCloseButtonBeside"]'
+        
+        // Убираем слишком широкий селектор: 'button[aria-hidden="true"][tabindex="-1"]'
       ];
       
       for (const selector of closeButtonSelectors) {
         try {
           const elements = await this.page.locator(selector).all();
+          console.log(`🔍 Проверяем селектор "${selector}": найдено ${elements.length} элементов`);
           for (const element of elements) {
-            if (await element.isVisible({ timeout: 1000 })) {
+            const isVisible = await element.isVisible({ timeout: 1000 });
+            console.log(`  📌 Элемент видим: ${isVisible}`);
+            if (isVisible) {
               // Проверяем, что родительский баннер тоже видим
               const isBannerVisible = await this.isBannerVisible(element);
+              console.log(`  📌 Родительский баннер видим: ${isBannerVisible}`);
               if (isBannerVisible) {
                 closeButtons.push({
                   selector: selector,
                   element: element,
                   type: 'direct'
                 });
+                console.log(`  ✅ Добавлена кнопка закрытия: ${selector}`);
               }
             }
           }
         } catch (e) {
-          // Игнорируем ошибки поиска элементов
+          console.log(`  ❌ Ошибка с селектором "${selector}": ${e.message}`);
         }
       }
       
@@ -358,25 +396,62 @@ export class BannerHandler {
       console.log(`🎯 Кликаем по элементу: ${closeButton.selector}`);
       console.log(`📍 Координаты: x=${Math.round(box.x)}, y=${Math.round(box.y)}, w=${Math.round(box.width)}, h=${Math.round(box.height)}`);
 
-      // Человекоподобное движение к кнопке
-      await this.cursor.moveTo(closeButton.selector, 'medium');
+      // Закрываем баннер через JavaScript (быстрее и надежнее)
+      console.log(`🎯 Закрываем баннер через JavaScript: ${closeButton.selector}`);
       
-      // Небольшая пауза перед кликом (как человек)
-      await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 300));
+      const clickResult = await this.page.evaluate((selector) => {
+        const element = document.querySelector(selector);
+        if (element) {
+          // Пробуем разные способы закрытия
+          if (element.click) {
+            element.click();
+            return 'clicked';
+          } else if (element.dispatchEvent) {
+            const event = new MouseEvent('click', {
+              view: window,
+              bubbles: true,
+              cancelable: true
+            });
+            element.dispatchEvent(event);
+            return 'dispatched';
+          }
+        }
+        return 'not_found';
+      }, closeButton.selector);
       
-      // Кликаем по кнопке
-      await this.cursor.click(closeButton.selector);
+      console.log(`🔍 Результат клика: ${clickResult}`);
       
       // Пауза после клика
       await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 500));
       
-      // Проверяем, что элемент исчез
-      const stillVisible = await closeButton.element.isVisible({ timeout: 1000 }).catch(() => false);
-      if (!stillVisible) {
-        console.log(`✅ Элемент успешно закрыт: ${closeButton.selector}`);
+      // Проверяем, что баннер закрылся (проверяем модальное окно, а не кнопку)
+      console.log(`🔍 Проверяем, закрылся ли баннер после клика...`);
+      
+      // Ждем немного, чтобы баннер успел закрыться
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Проверяем модальное окно
+      const modalStillVisible = await this.page.evaluate(() => {
+        const modal = document.querySelector('.Distribution-SplashScreenModal');
+        if (!modal) return false;
+        
+        const rect = modal.getBoundingClientRect();
+        const style = window.getComputedStyle(modal);
+        
+        return rect.width > 0 && 
+               rect.height > 0 && 
+               style.display !== 'none' && 
+               style.visibility !== 'hidden' &&
+               parseFloat(style.opacity) > 0;
+      });
+      
+      console.log(`🔍 Модальное окно все еще видимо: ${modalStillVisible}`);
+      
+      if (!modalStillVisible) {
+        console.log(`✅ Баннер успешно закрыт: ${closeButton.selector}`);
         return true;
       } else {
-        console.log(`⚠️ Элемент все еще видим после клика: ${closeButton.selector}`);
+        console.log(`⚠️ Баннер все еще видим после клика: ${closeButton.selector}`);
         return false;
       }
       

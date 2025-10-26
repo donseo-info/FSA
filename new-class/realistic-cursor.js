@@ -155,6 +155,15 @@ export class RealisticCursor {
 
       await this.page.mouse.move(jitteredPoint.x, jitteredPoint.y);
 
+      // Принудительно обновляем визуальный курсор
+      await this.page.evaluate(({ x, y }) => {
+        const cursor = document.getElementById('realistic-cursor');
+        if (cursor) {
+          cursor.style.left = x + 'px';
+          cursor.style.top = y + 'px';
+        }
+      }, { x: jitteredPoint.x, y: jitteredPoint.y });
+
       await this.page.waitForTimeout(duration / steps);
     }
 

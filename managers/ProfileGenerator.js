@@ -11,17 +11,8 @@ class ProfileGenerator {
     this.profilesDir = path.resolve('./profiles');
     this.metadataFile = path.join(this.profilesDir, 'metadata.json');
     
-    // Chrome paths можно задать через options или использовать по умолчанию
-    this.chromePaths = options.chromePaths || [
-      {
-        path: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-        versions: ['141.0.7390.66', '141.0.7390.65', '141.0.7390.56']
-      },
-      {
-        path: 'F:\\Browser\\140-186\\App\\Chrome-bin\\chrome.exe',
-        versions: ['140.0.6921.186']
-      }
-    ];
+    // Chrome paths должны быть переданы через options
+    this.chromePaths = options.chromePaths || [];
     
     this.ensureProfilesDir();
     this.metadata = this.loadMetadata();
@@ -144,26 +135,14 @@ class ProfileGenerator {
         totalCookies: 0,
         uniqueDomains: 0,
         lastUpdated: new Date().toISOString()
-      }
+      },
+      // Домены, которые профиль уже посещал через поиск
+      visitedDomains: [],
+      // Метки (теги) для фильтрации профилей
+      tags: []
     };
     
     this.saveMetadata();
-    
-    console.log(`✅ Профиль создан: ${profileName}`);
-    console.log(`   🖥️ Устройство: ${config.deviceName}`);
-    console.log(`   📐 Разрешение: ${config.resolution.width}x${config.resolution.height}`);
-    console.log(`   🗣️ Язык: ${config.locale}`);
-    console.log(`   💻 Железо: ${config.hardware.cores} ядер, ${config.hardware.memory} GB`);
-    console.log(`   🎮 GPU: ${config.webgl.renderer}`);
-    
-    if (config.plugins && config.plugins.length > 0) {
-      console.log(`   🔌 Плагины (${config.plugins.length}):`);
-      config.plugins.forEach(plugin => {
-        console.log(`      📦 ${plugin.name} v${plugin.version} (${plugin.id})`);
-      });
-    } else {
-      console.log(`   🔌 Плагины: нет`);
-    }
     
     return this.metadata.profiles[profileName];
   }
@@ -172,9 +151,6 @@ class ProfileGenerator {
    * Получает или создает профиль
    */
   getOrCreateProfile(profileName) {
-    console.log('🔍 getOrCreateProfile вызван с profileName:', profileName);
-    console.log('🔍 profileExists результат:', this.profileExists(profileName));
-    
     if (this.profileExists(profileName)) {
       return this.getProfileConfig(profileName);
     } else {
@@ -186,18 +162,25 @@ class ProfileGenerator {
    * Получает конфигурацию профиля
    */
   getProfileConfig(profileName) {
-    console.log('🔍 getProfileConfig вызван с profileName:', profileName);
-    console.log('🔍 Доступные профили:', this.metadata.profiles ? Object.keys(this.metadata.profiles) : []);
-    
     if (!this.metadata.profiles || !this.metadata.profiles[profileName]) {
       throw new Error(`Профиль ${profileName} не найден`);
     }
     
-    // Обновляем время последнего использования (в локальном часовом поясе)
+    // Возвращаем конфигурацию БЕЗ обновления lastUsed
+    // lastUsed обновляется в starter-multi-surfer.js после выбора профиля
+    return this.metadata.profiles[profileName];
+  }
+  
+  /**
+   * Обновляет время последнего использования профиля
+   */
+  updateLastUsed(profileName) {
+    if (!this.metadata.profiles || !this.metadata.profiles[profileName]) {
+      throw new Error(`Профиль ${profileName} не найден`);
+    }
+    
     this.metadata.profiles[profileName].lastUsed = new Date().toString();
     this.saveMetadata();
-    
-    return this.metadata.profiles[profileName];
   }
 
   /**
@@ -242,6 +225,289 @@ class ProfileGenerator {
       name,
       ...this.metadata.profiles[name]
     }));
+  }
+
+  /**
+   * Добавляет домен в список посещенных доменов профиля
+   */
+  addVisitedDomain(profileName, domain) {
+    if (!this.metadata.profiles || !this.metadata.profiles[profileName]) {
+      throw new Error(`Профиль ${profileName} не найден`);
+    }
+    
+    const profile = this.metadata.profiles[profileName];
+    
+    // Инициализируем visitedDomains, если его нет (для старых профилей)
+    if (!profile.visitedDomains) {
+      profile.visitedDomains = [];
+    }
+    
+    // Добавляем домен, если его еще нет
+    if (!profile.visitedDomains.includes(domain)) {
+      profile.visitedDomains.push(domain);
+      this.saveMetadata();
+    }
+  }
+
+  /**
+   * Добавляет тег к профилю
+   */
+  addTag(profileName, tag) {
+    if (!this.metadata.profiles || !this.metadata.profiles[profileName]) {
+      throw new Error(`Профиль ${profileName} не найден`);
+    }
+    
+    const profile = this.metadata.profiles[profileName];
+    
+    // Инициализируем tags, если его нет (для старых профилей)
+    if (!profile.tags) {
+      profile.tags = [];
+    }
+    
+    // Добавляем тег, если его еще нет
+    if (!profile.tags.includes(tag)) {
+      profile.tags.push(tag);
+      this.saveMetadata();
+    }
+  }
+
+  /**
+   * Получает профили, которые еще не посещали указанный домен
+   */
+  getProfilesNotVisitedDomain(domain) {
+    if (!this.metadata.profiles) {
+      return [];
+    }
+    
+    return Object.keys(this.metadata.profiles)
+      .filter(name => {
+        const profile = this.metadata.profiles[name];
+        const visitedDomains = profile.visitedDomains || [];
+        return !visitedDomains.includes(domain);
+      })
+      .map(name => ({
+        name,
+        ...this.metadata.profiles[name]
+      }));
+  }
+
+  /**
+   * Получает профили с указанным тегом
+   */
+  getProfilesWithTag(tag) {
+    if (!this.metadata.profiles) {
+      return [];
+    }
+    
+    return Object.keys(this.metadata.profiles)
+      .filter(name => {
+        const profile = this.metadata.profiles[name];
+        const tags = profile.tags || [];
+        return tags.includes(tag);
+      })
+      .map(name => ({
+        name,
+        ...this.metadata.profiles[name]
+      }));
+  }
+
+  /**
+   * Получает профили с фильтрацией по количеству уникальных доменов в cookies
+   * @param {string} operator - '>' или '<'
+   * @param {number} domainsCount - количество доменов для сравнения
+   */
+  getProfilesByDomainsCount(operator, domainsCount) {
+    if (!this.metadata.profiles) {
+      return [];
+    }
+    
+    return Object.keys(this.metadata.profiles)
+      .filter(name => {
+        const profile = this.metadata.profiles[name];
+        const cookies = profile.cookies || {};
+        const uniqueDomains = cookies.uniqueDomains || 0;
+        
+        if (operator === '>') {
+          return uniqueDomains > domainsCount;
+        } else if (operator === '<') {
+          return uniqueDomains < domainsCount;
+        }
+        
+        return false;
+      })
+      .map(name => ({
+        name,
+        ...this.metadata.profiles[name]
+      }));
+  }
+
+  /**
+   * Получает профили с фильтрацией по дате создания профиля
+   * @param {string} operator - '>' (старше) или '<' (младше)
+   * @param {number} days - количество дней для сравнения
+   */
+  getProfilesByCreatedAt(operator, days) {
+    if (!this.metadata.profiles) {
+      return [];
+    }
+    
+    const now = new Date();
+    const targetDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
+    
+    return Object.keys(this.metadata.profiles)
+      .filter(name => {
+        const profile = this.metadata.profiles[name];
+        const createdAt = profile.createdAt;
+        
+        if (!createdAt) {
+          return false; // Нет даты создания - исключаем
+        }
+        
+        const profileDate = new Date(createdAt);
+        
+        if (operator === '>') {
+          // Старше N дней
+          return profileDate < targetDate;
+        } else if (operator === '<') {
+          // Младше N дней
+          return profileDate > targetDate;
+        }
+        
+        return false;
+      })
+      .map(name => ({
+        name,
+        ...this.metadata.profiles[name]
+      }));
+  }
+
+  /**
+   * Получает профили с применением нескольких фильтров
+   * @param {Object} filters - объект с фильтрами
+   * @param {string} filters.tag - тег профиля
+   * @param {string} filters.notVisitedDomain - исключает домен из посещенных
+   * @param {Object} filters.domainsCount - фильтр по количеству доменов {operator: '>', count: 50}
+   * @param {Object} filters.createdAt - фильтр по дате создания {operator: '<', days: 2}
+   * @param {Object} filters.cooldownMinutes - фильтр по cooldown {minutes: 60}
+   * @returns {Array} - массив отфильтрованных профилей
+   */
+  getFilteredProfiles(filters = {}) {
+    if (!this.metadata.profiles) {
+      return [];
+    }
+    
+    let filteredProfiles = Object.keys(this.metadata.profiles).map(name => ({
+      name,
+      ...this.metadata.profiles[name]
+    }));
+    
+    // Фильтр по тегу
+    if (filters.tag) {
+      filteredProfiles = filteredProfiles.filter(profile => {
+        const tags = profile.tags || [];
+        return tags.includes(filters.tag);
+      });
+    }
+    
+    // Фильтр по не посещенным доменам
+    if (filters.notVisitedDomain) {
+      filteredProfiles = filteredProfiles.filter(profile => {
+        const visitedDomains = profile.visitedDomains || [];
+        return !visitedDomains.includes(filters.notVisitedDomain);
+      });
+    }
+    
+    // Фильтр по количеству доменов
+    if (filters.domainsCount) {
+      const { operator, count } = filters.domainsCount;
+      filteredProfiles = filteredProfiles.filter(profile => {
+        const cookies = profile.cookies || {};
+        const uniqueDomains = cookies.uniqueDomains || 0;
+        
+        if (operator === '>') {
+          return uniqueDomains > count;
+        } else if (operator === '<') {
+          return uniqueDomains < count;
+        }
+        return false;
+      });
+    }
+    
+    // Фильтр по дате создания
+    if (filters.createdAt) {
+      const { operator, days } = filters.createdAt;
+      const now = new Date();
+      const targetDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
+      
+      filteredProfiles = filteredProfiles.filter(profile => {
+        const createdAt = profile.createdAt;
+        if (!createdAt) return false;
+        
+        const profileDate = new Date(createdAt);
+        
+        if (operator === '>') {
+          return profileDate < targetDate; // Старше
+        } else if (operator === '<') {
+          return profileDate > targetDate; // Младше
+        }
+        return false;
+      });
+    }
+    
+    // Фильтр по cooldown (время последнего использования)
+    if (filters.cooldownMinutes) {
+      const cooldownMs = filters.cooldownMinutes * 60 * 1000;
+      const now = new Date();
+      
+      filteredProfiles = filteredProfiles.filter(profile => {
+        if (!profile.lastUsed) return true; // Никогда не использовался
+        
+        const lastUsed = new Date(profile.lastUsed);
+        const timeSinceLastUsed = now - lastUsed;
+        
+        return timeSinceLastUsed >= cooldownMs;
+      });
+    }
+    
+    return filteredProfiles;
+  }
+
+  /**
+   * Выбирает профиль с учетом фильтров и сортировки
+   * @param {Object} options - опции выборки
+   * @param {Object} options.filters - фильтры (как в getFilteredProfiles)
+   * @param {string} options.sortBy - поле для сортировки ('lastUsed', 'createdAt')
+   * @param {string} options.sortOrder - порядок сортировки ('asc', 'desc')
+   * @returns {Object|null} - выбранный профиль или null
+   */
+  selectProfile(options = {}) {
+    const { filters = {}, sortBy = 'lastUsed', sortOrder = 'asc' } = options;
+    
+    let profiles = this.getFilteredProfiles(filters);
+    
+    if (profiles.length === 0) {
+      return null;
+    }
+    
+    // Сортируем профили
+    profiles.sort((a, b) => {
+      let aValue = a[sortBy];
+      let bValue = b[sortBy];
+      
+      // Преобразуем строки дат в Date объекты для сравнения
+      if (sortBy === 'lastUsed' || sortBy === 'createdAt') {
+        aValue = aValue ? new Date(aValue) : new Date(0);
+        bValue = bValue ? new Date(bValue) : new Date(0);
+      }
+      
+      if (sortOrder === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+    
+    return profiles[0];
   }
 
   /**

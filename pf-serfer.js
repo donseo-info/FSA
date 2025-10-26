@@ -60,6 +60,9 @@ class PFSerfer {
     this.captchaSolver = null;
     this.bannerHandler = null;
     
+    // Регион для подмены
+    this.regionLr = options.regionLr || null;
+    
     // Статистика
     this.stats = {
       startTime: null,
@@ -485,11 +488,15 @@ class PFSerfer {
     }
     
     const targetPage = page || this.page;
+    
+    // Создаем новый BannerHandler для целевой страницы
+    const { BannerHandler } = await import('./new-class/banner-handler.js');
+    const currentBannerHandler = new BannerHandler(targetPage, this.cursor);
 
     try {
       this.writeLog('🎯 Проверка баннеров после навигации...', 'INFO');
       
-      const result = await this.bannerHandler.handleBannersAfterLoad(targetPage);
+      const result = await currentBannerHandler.handleBannersAfterLoad(targetPage);
       
       if (result.closed > 0) {
         this.writeLog(`✅ Закрыто баннеров: ${result.closed}/${result.total}`, 'SUCCESS');
@@ -530,6 +537,13 @@ class PFSerfer {
           this.writeLog(`✅ Капча решена после ${actionName}`, 'SUCCESS');
           // Дополнительная задержка после решения капчи
           await page.waitForTimeout(2000);
+          
+          // Проверяем баннеры после решения капчи
+          if (this.bannerHandler) {
+            console.log('🔍 Проверяем баннеры после решения капчи...');
+            await this.bannerHandler.handleBannersAfterLoad();
+          }
+          
           return true;
         } else {
           this.writeLog(`❌ Не удалось решить капчу после ${actionName}`, 'ERROR');
@@ -668,10 +682,10 @@ class PFSerfer {
       // Автоматическая проверка капчи после навигации
       await this.autoCheckCaptcha(page, 'навигации');
       
-      // Автоматическое закрытие баннеров после навигации
-      if (this.bannerHandler) {
-        await this.handleBannersAfterNavigation();
-      }
+      // Автоматическое закрытие баннеров после навигации отключено
+      // if (this.bannerHandler) {
+      //   await this.handleBannersAfterNavigation();
+      // }
       
       this.stats.pagesVisited++;
       this.writeLog(`✅ Переход на ${url} завершен`, 'SUCCESS');
@@ -967,6 +981,39 @@ class PFSerfer {
     try {
       console.log(`🔍 Выполняем поиск: "${query}"`);
       
+      // Проверяем, находимся ли мы уже на странице результатов поиска
+      const currentUrl = await page.url();
+      const isSearchResultsPage = currentUrl.includes('yandex.ru/search/') || currentUrl.includes('yandex.ru/search?');
+      const isDzenPage = currentUrl.includes('dzen.ru');
+      
+      console.log(`🔍 Текущий URL: ${currentUrl}`);
+      console.log(`🔍 Это страница результатов поиска: ${isSearchResultsPage}`);
+      console.log(`🔍 Это страница Dzen: ${isDzenPage}`);
+      
+      if (isSearchResultsPage) {
+        console.log('📍 Уже находимся на странице результатов поиска, пропускаем поиск поля ввода');
+        
+        // Проверяем и закрываем баннеры
+        if (this.bannerHandler) {
+          console.log('🎯 Проверяем баннеры на странице результатов...');
+          const { BannerHandler } = await import('./new-class/banner-handler.js');
+          const currentBannerHandler = new BannerHandler(page, this.cursor);
+          const bannerResult = await currentBannerHandler.closeAllBanners();
+          if (bannerResult.closed > 0) {
+            console.log(`✅ Закрыто ${bannerResult.closed} баннеров на странице результатов`);
+          }
+        }
+        
+        // Если есть targetDomain, ищем его на текущей странице
+        if (targetDomain) {
+          console.log(`🎯 Ищем ссылку с доменом: ${targetDomain}`);
+          const clickResult = await this.findAndClickDomainLink(page, targetDomain, maxPages, this.captchaSolver);
+          return { success: true, query: query, domainClick: clickResult };
+        }
+        
+        return { success: true, query: query };
+      }
+      
       // Для Яндекса делаем минимальное поведение
       console.log('🎯 Имитируем естественное поведение на странице Яндекса...');
       
@@ -980,6 +1027,36 @@ class PFSerfer {
       
       // Небольшая пауза для имитации чтения страницы
       await this.randomDelay(1000, 1500);
+      
+      // Проверяем и закрываем баннеры перед поиском
+      if (this.bannerHandler) {
+        console.log('🎯 Проверяем баннеры перед поиском...');
+        // Создаем новый BannerHandler для текущей страницы
+        const { BannerHandler } = await import('./new-class/banner-handler.js');
+        const currentBannerHandler = new BannerHandler(page, this.cursor);
+        const bannerResult = await currentBannerHandler.closeAllBanners();
+        if (bannerResult.closed > 0) {
+          console.log(`✅ Закрыто ${bannerResult.closed} баннеров перед поиском`);
+        }
+      }
+      
+      // После закрытия баннеров проверяем URL еще раз
+      const urlAfterBannerClose = await page.url();
+      const isSearchResultsPageAfter = urlAfterBannerClose.includes('yandex.ru/search/') || urlAfterBannerClose.includes('yandex.ru/search?');
+      
+      if (isSearchResultsPageAfter) {
+        console.log('📍 После закрытия баннеров обнаружили, что мы на странице результатов поиска');
+        console.log('📍 Пропускаем поиск поля ввода и переходим к поиску домена');
+        
+        // Если есть targetDomain, ищем его на текущей странице
+        if (targetDomain) {
+          console.log(`🎯 Ищем ссылку с доменом: ${targetDomain}`);
+          const clickResult = await this.findAndClickDomainLink(page, targetDomain, maxPages, this.captchaSolver);
+          return { success: true, query: query, domainClick: clickResult };
+        }
+        
+        return { success: true, query: query };
+      }
       
       // Ищем поле поиска в основном документе и во фреймах
       const searchSelectors = [
@@ -999,7 +1076,12 @@ class PFSerfer {
         '.search__input',
         '#text',
         'input[class*="search"]',
-        'input[class*="input"]'
+        // Убираем слишком общий селектор input[class*="input"]
+        // Добавляем более специфичные селекторы для Яндекса
+        'input[name="text"][type="text"]',
+        'input[aria-label="Запрос"][type="text"]',
+        'input.mini-suggest__input[type="text"]',
+        'input.arrow__input[type="text"]'
       ];
       
       let searchInput = null;
@@ -1163,6 +1245,21 @@ class PFSerfer {
       await searchInput.type(query, { delay: 50 });
       await this.randomDelay(1000, 1500);
       
+      // Заменяем значение существующего скрытого поля lr
+      if (this.regionLr) {
+        console.log(`🌍 Заменяем значение lr на ${this.regionLr} в форме поиска...`);
+        await page.evaluate((regionLr) => {
+          // Ищем существующее поле lr и заменяем его значение
+          const lrInput = document.querySelector('input[name="lr"]');
+          if (lrInput) {
+            lrInput.value = regionLr;
+            console.log(`✅ Заменено значение lr на ${regionLr} в форме поиска`);
+          } else {
+            console.log('⚠️ Поле lr не найдено в форме поиска');
+          }
+        }, this.regionLr);
+      }
+      
       // Нажимаем Enter
       await searchInput.press('Enter');
       
@@ -1179,8 +1276,78 @@ class PFSerfer {
         // Ждем загрузки результатов поиска
         console.log('⏳ Ждем загрузки результатов поиска...');
         await resultsPage.waitForLoadState('domcontentloaded', { timeout: 10000 });
-        await resultsPage.waitForSelector('.serp-item, .organic, .search-result', { timeout: 10000 });
-        console.log('✅ Результаты поиска загружены');
+        
+        // Переинициализируем курсор для новой вкладки
+        console.log('🎯 Переинициализируем курсор для новой вкладки...');
+        if (this.cursor) {
+          this.cursor = new RealisticCursor(resultsPage);
+          await this.cursor.init();
+          console.log('✅ Курсор переинициализирован для новой вкладки');
+          
+          // Синхронизируем визуальный курсор с реальными движениями мыши
+          console.log('🎨 Синхронизируем визуальный курсор с движениями мыши...');
+          await resultsPage.addInitScript(() => {
+            // Перехватываем все движения мыши и обновляем визуальный курсор
+            document.addEventListener('mousemove', (e) => {
+              const cursor = document.getElementById('realistic-cursor');
+              if (cursor) {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+              }
+            });
+            
+            // Перехватываем программные движения мыши через CDP
+            const originalMouseMove = window.mouseMove;
+            if (originalMouseMove) {
+              window.mouseMove = function(x, y) {
+                const cursor = document.getElementById('realistic-cursor');
+                if (cursor) {
+                  cursor.style.left = x + 'px';
+                  cursor.style.top = y + 'px';
+                }
+                return originalMouseMove(x, y);
+              };
+            }
+          });
+          console.log('✅ Визуальный курсор синхронизирован с движениями мыши');
+        }
+        
+        // Проверяем капчу сразу после загрузки новой вкладки
+        console.log('🔍 Проверяем капчу после загрузки новой вкладки...');
+        
+        // Проверяем URL новой вкладки на капчу
+        const resultsUrl = resultsPage.url();
+        if (resultsUrl.includes('showcaptcha') || resultsUrl.includes('captcha')) {
+          console.log(`🔐 Обнаружена капча в URL новой вкладки: ${resultsUrl}`);
+          await this.autoCheckCaptcha(resultsPage, 'загрузки новой вкладки');
+        } else {
+          console.log('✅ Капча не обнаружена в URL новой вкладки');
+        }
+        
+        // Ждем появления результатов поиска с разными селекторами для ya.ru
+        try {
+          await resultsPage.waitForSelector('.serp-item, .organic, .search-result, .serp-item, .organic__url, .serp-item__title', { timeout: 10000 });
+          console.log('✅ Результаты поиска загружены');
+        } catch (error) {
+          console.log('⚠️ Стандартные селекторы результатов не найдены, проверяем альтернативные...');
+          // Проверяем наличие любых результатов на странице
+          const hasResults = await resultsPage.evaluate(() => {
+            return document.querySelector('.serp-item') || 
+                   document.querySelector('.organic') || 
+                   document.querySelector('.search-result') ||
+                   document.querySelector('.serp-item__title') ||
+                   document.querySelector('.organic__url') ||
+                   document.querySelector('[class*="serp"]') ||
+                   document.querySelector('[class*="organic"]');
+          });
+          
+          if (hasResults) {
+            console.log('✅ Результаты поиска найдены альтернативным способом');
+          } else {
+            console.log('❌ Результаты поиска не найдены');
+            throw error;
+          }
+        }
         
         // ПЕРЕКЛЮЧАЕМСЯ на новую вкладку с результатами
         console.log('🔄 Переключаемся на вкладку с результатами поиска...');
@@ -1201,7 +1368,40 @@ class PFSerfer {
         // Ждем загрузки результатов в той же вкладке
         console.log('⏳ Ждем загрузки результатов поиска в той же вкладке...');
         await page.waitForLoadState('domcontentloaded', { timeout: 10000 });
-        await page.waitForSelector('.serp-item, .organic, .search-result', { timeout: 10000 });
+        
+        // Проверяем капчу сразу после загрузки страницы
+        console.log('🔍 Проверяем капчу после отправки формы поиска...');
+        await this.autoCheckCaptcha(page, 'отправки формы поиска');
+        
+        // Проверяем URL после загрузки
+        const searchUrl = await page.url();
+        console.log(`📍 URL после поиска: ${searchUrl}`);
+        
+        // Ждем появления результатов поиска с разными селекторами для ya.ru
+        try {
+          await page.waitForSelector('.serp-item, .organic, .search-result, .serp-item, .organic__url, .serp-item__title', { timeout: 10000 });
+          console.log('✅ Результаты поиска загружены');
+        } catch (error) {
+          console.log('⚠️ Стандартные селекторы результатов не найдены, проверяем альтернативные...');
+          // Проверяем наличие любых результатов на странице
+          const hasResults = await page.evaluate(() => {
+            return document.querySelector('.serp-item') || 
+                   document.querySelector('.organic') || 
+                   document.querySelector('.search-result') ||
+                   document.querySelector('.serp-item__title') ||
+                   document.querySelector('.organic__url') ||
+                   document.querySelector('[class*="serp"]') ||
+                   document.querySelector('[class*="organic"]');
+          });
+          
+          if (hasResults) {
+            console.log('✅ Результаты поиска найдены альтернативным способом');
+          } else {
+            console.log('❌ Результаты поиска не найдены');
+            throw error;
+          }
+        }
+        
         console.log('✅ Результаты поиска загружены в той же вкладке');
         resultsPage = page;
         
@@ -1210,11 +1410,13 @@ class PFSerfer {
         console.log(`📍 Текущий URL: ${currentUrl}`);
       }
       
-      // Проверяем капчу и баннеры на странице результатов
+      // Проверяем капчу на странице результатов
       await this.autoCheckCaptcha(resultsPage, 'поиска');
-      if (this.bannerHandler) {
-        await this.handleBannersAfterNavigation(resultsPage);
-      }
+      
+      // Баннеры уже были закрыты ранее, не нужно закрывать повторно
+      // if (this.bannerHandler) {
+      //   await this.handleBannersAfterNavigation(resultsPage);
+      // }
       
       await this.randomDelay(1000, 1500);
       
@@ -1466,7 +1668,10 @@ class PFSerfer {
       // Проверяем и закрываем баннеры перед кликом
       console.log('🎯 Проверяем баннеры перед переходом на следующую страницу...');
       if (this.bannerHandler) {
-        const bannerResult = await this.bannerHandler.closeAllBanners();
+        // Создаем новый BannerHandler для текущей страницы
+        const { BannerHandler } = await import('./new-class/banner-handler.js');
+        const currentBannerHandler = new BannerHandler(page, this.cursor);
+        const bannerResult = await currentBannerHandler.closeAllBanners();
         if (bannerResult.closed > 0) {
           console.log(`✅ Закрыто ${bannerResult.closed} баннеров перед переходом`);
           await this.randomDelay(1000, 1500);
