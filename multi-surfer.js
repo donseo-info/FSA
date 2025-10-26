@@ -19,6 +19,7 @@ class MultiSurfer {
     this.delayMax = options.delayMax || 5000; // 5 секунд
     this.enableTabSwitching = options.enableTabSwitching !== false; // по умолчанию включено
     this.enableResourceBlocking = options.enableResourceBlocking !== false; // по умолчанию включено
+    this.showBrowser = options.showBrowser !== undefined ? options.showBrowser : false; // по умолчанию скрыто
     this.viewTimeMin = options.viewTimeMin || 5; // минимальное время просмотра страницы (секунды)
     this.viewTimeMax = options.viewTimeMax || 10; // максимальное время просмотра страницы (секунды)
     
@@ -383,6 +384,15 @@ class MultiSurfer {
     const page = await context.newPage();
     // Создана новая страница
     
+    // Устанавливаем размер viewport из конфигурации профиля
+    const generator = new ProfileGenerator();
+    const profileConfig = generator.getProfileConfig(this.profileName);
+    if (profileConfig && profileConfig.resolution) {
+      const { width, height } = profileConfig.resolution;
+      await page.setViewportSize({ width, height });
+      this.writeLog(`[Вкладка ${tabIndex}] 📐 Viewport установлен: ${width}x${height}`, 'INFO');
+    }
+    
     // Блокируем попапы на уровне страницы
     page.on('popup', async (popup) => {
       try {
@@ -415,6 +425,7 @@ class MultiSurfer {
 
   /**
    * Переключается на случайную вкладку для имитации поведения пользователя
+   * БЕЗ активации окна - просто ждем для имитации активности
    */
   async switchToRandomTab(allPages, currentTabIndex) {
     try {
@@ -422,20 +433,10 @@ class MultiSurfer {
       const availableTabs = allPages.filter(tab => tab.tabIndex !== currentTabIndex);
       if (availableTabs.length === 0) return;
       
-      const randomTab = availableTabs[Math.floor(Math.random() * availableTabs.length)];
-      
-      // Активируем случайную вкладку
-      await randomTab.page.bringToFront();
-      
-      // Ждем немного на случайной вкладке
+      // Ждем немного для имитации переключения между вкладками
+      // НЕ вызываем bringToFront() чтобы окно не разворачивалось
       const waitTime = Math.floor(Math.random() * 3000) + 1000; // 1-4 секунды
       await new Promise(resolve => setTimeout(resolve, waitTime));
-      
-      // Возвращаемся на исходную вкладку
-      const currentPage = allPages.find(tab => tab.tabIndex === currentTabIndex);
-      if (currentPage) {
-        await currentPage.page.bringToFront();
-      }
       
     } catch (error) {
       this.writeLog(`[Вкладка ${currentTabIndex}] ⚠️ Ошибка переключения вкладок: ${error.message}`, 'WARN');
@@ -484,7 +485,8 @@ class MultiSurfer {
         port: this.port, 
         proxy,
         enablePlugins: false, // Отключаем плагины для серфинга
-        enableResourceBlocking: this.enableResourceBlocking // Передаем настройку блокировки ресурсов
+        enableResourceBlocking: this.enableResourceBlocking, // Передаем настройку блокировки ресурсов
+        showBrowser: this.showBrowser // Передаем настройку видимости браузера
       });
 
       // Запускаем браузер

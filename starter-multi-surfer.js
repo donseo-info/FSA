@@ -1,4 +1,5 @@
 import { MultiSurfer } from './multi-surfer.js';
+import { ProfileGenerator } from './managers/ProfileGenerator.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -36,27 +37,29 @@ class StarterMultiSurfer {
       // Включить блокировку ресурсов
       enable_resource_blocking: true,
       
+      // Показывать браузер (true = видно, false = скрыто)
+      show_browser: true,
+      
       // Пауза между работой профилей (минуты)
       cooldown_minutes: 60,
       
       // Максимальное количество сессий (0 = бесконечно)
       max_sessions: 0,
       
-      // Статичный профиль (пока, будет заменен на динамический выбор)
-      profile: 'bot-779571040',
+      // Фильтры для выбора профилей (опционально)
+      profileFilters: null,  // Используем умную фильтрацию ProfileGenerator
       
       // Путь к файлу с сайтами
-      sites_file: 'configs/site-serf.txt',
-      
-      // Путь к файлу метаданных профилей
-      profiles_metadata_file: 'profiles/metadata.json'
+      sites_file: 'configs/site-serf.txt'
     };
     
     // Кэш сайтов (загружается один раз)
     this.sitesCache = null;
     
-    // Кэш метаданных профилей (загружается один раз)
-    this.profilesCache = null;
+    // Инициализируем ProfileGenerator
+    this.profileGenerator = new ProfileGenerator({
+      chromePaths: [] // Будет загружено при первом использовании
+    });
     
     // Статистика работы
     this.stats = {
@@ -141,27 +144,6 @@ class StarterMultiSurfer {
   }
 
   /**
-   * Загружает метаданные профилей из файла (один раз)
-   */
-  loadProfilesMetadata() {
-    if (this.profilesCache) {
-      return this.profilesCache;
-    }
-
-    try {
-      const metadataPath = path.resolve(this.config.profiles_metadata_file);
-      const content = fs.readFileSync(metadataPath, 'utf-8');
-      
-      this.profilesCache = JSON.parse(content);
-      
-      return this.profilesCache;
-    } catch (error) {
-      console.error(`❌ Ошибка загрузки метаданных профилей: ${error.message}`);
-      return { profiles: {} };
-    }
-  }
-
-  /**
    * Выбирает случайное количество сайтов из списка
    */
   selectRandomSites() {
@@ -194,104 +176,110 @@ class StarterMultiSurfer {
   }
 
   /**
-   * Обновляет кэш метаданных профилей из файла
-   */
-  refreshProfilesMetadata() {
-    try {
-      const metadataPath = path.resolve(this.config.profiles_metadata_file);
-      const content = fs.readFileSync(metadataPath, 'utf-8');
-      
-      this.profilesCache = JSON.parse(content);
-      
-      return this.profilesCache;
-    } catch (error) {
-      console.error(`❌ Ошибка обновления метаданных профилей: ${error.message}`);
-      return { profiles: {} };
-    }
-  }
-
-  /**
    * Выбирает профиль, который дольше всего был в простое и прошел cooldown
    */
   selectAvailableProfile() {
-    // Обновляем кэш перед каждой проверкой
-    const metadata = this.refreshProfilesMetadata();
-    const profiles = metadata.profiles || {};
-    
-    if (Object.keys(profiles).length === 0) {
-      console.error('❌ Нет доступных профилей');
-      throw new Error('Нет профилей в метаданных');
-    }
-
-    const now = new Date();
-    const cooldownMs = this.config.cooldown_minutes * 60 * 1000; // Конвертируем минуты в миллисекунды
-    
-    // Фильтруем профили, которые прошли cooldown
-    const availableProfiles = [];
-    
-    for (const [profileName, profileData] of Object.entries(profiles)) {
-      // Парсим время в локальном часовом поясе
-      const lastUsed = new Date(profileData.lastUsed);
-      const timeSinceLastUsed = now - lastUsed;
-      const minutesSinceLastUsed = Math.round(timeSinceLastUsed / (60 * 1000));
+    // Используем умную фильтрацию ProfileGenerator
+    try {
+      const filters = {
+        ...this.config.profileFilters,  // Пользовательские фильтры (если есть)
+        cooldownMinutes: Math.max(this.config.cooldown_minutes, 10)  // Минимум 10 минут между сессиями профиля
+        // createdAt и domainsCount фильтры - опционально, сейчас отключены
+        // createdAt: { operator: '<', days: 7 },  // Раскомментируйте если нужен фильтр по возрасту
+        // domainsCount: { operator: '<', count: 100 }  // Раскомментируйте если нужен фильтр по доменам
+      };
       
-      // Проверяем доступность профиля
-      
-      if (timeSinceLastUsed >= cooldownMs) {
-        availableProfiles.push({
-          name: profileName,
-          lastUsed: lastUsed,
-          timeSinceLastUsed: timeSinceLastUsed,
-          deviceName: profileData.deviceName || 'Unknown'
+      // Логируем применяемые фильтры
+      console.log('\n🔍 Фильтры выбора профиля:');
+      console.log(`   cooldownMinutes: ${filters.cooldownMinutes}`);
+      if (filters.createdAt) {
+        console.log(`   createdAt: ${JSON.stringify(filters.createdAt)}`);
+      }
+      if (filters.domainsCount) {
+        console.log(`   domainsCount: ${JSON.stringify(filters.domainsCount)}`);
+      }
+      if (this.config.profileFilters) {
+        Object.keys(this.config.profileFilters).forEach(key => {
+          console.log(`   ${key}: ${JSON.stringify(this.config.profileFilters[key])}`);
         });
       }
-    }
-    
-    if (availableProfiles.length === 0) {
-      console.warn(`⚠️ Нет профилей, прошедших cooldown (${this.config.cooldown_minutes} минут)`);
-      console.log('📋 Доступные профили и время до следующего использования:');
       
-      for (const [profileName, profileData] of Object.entries(profiles)) {
-        const lastUsed = new Date(profileData.lastUsed);
-        const timeSinceLastUsed = now - lastUsed;
-        const timeUntilAvailable = cooldownMs - timeSinceLastUsed;
-        const minutesUntilAvailable = Math.ceil(timeUntilAvailable / (60 * 1000));
+      const selectedProfile = this.profileGenerator.selectProfile({
+        filters,
+        sortBy: 'lastUsed',
+        sortOrder: 'asc'  // Самый старый (дольше не работал)
+      });
+      
+      if (!selectedProfile) {
+        console.warn(`\n⚠️ Нет профилей, соответствующих фильтрам!`);
+        console.log('📋 Примененные фильтры:');
+        Object.keys(filters).forEach(key => {
+          console.log(`   - ${key}: ${JSON.stringify(filters[key])}`);
+        });
+        console.log(`   - Сортировка: по последнему использованию (самый старый)`);
+        console.log('\n💡 Возможные причины:');
+        if (filters.cooldownMinutes) {
+          console.log(`   1. Все профили работали менее ${filters.cooldownMinutes} минут назад`);
+        }
+        if (filters.createdAt) {
+          console.log(`   2. Все профили не соответствуют критерию возраста: ${JSON.stringify(filters.createdAt)}`);
+        }
+        if (filters.domainsCount) {
+          console.log(`   3. Все профили не соответствуют критерию доменов: ${JSON.stringify(filters.domainsCount)}`);
+        }
+        console.log('\n⏳ Ожидайте завершения cooldown или создайте новые профили');
+        throw new Error(`Нет доступных профилей`);
+      }
+      
+      // Форматируем время простоя в читаемый вид
+      const formatTimeSinceLastUsed = (lastUsedStr) => {
+        if (!lastUsedStr) return 'никогда';
         
-        console.log(`   ${profileName}: ${minutesUntilAvailable} минут до доступности`);
-      }
+        const now = new Date();
+        const lastUsed = new Date(lastUsedStr);
+        const timeSinceLastUsed = now - lastUsed;
+        
+        const seconds = Math.floor(timeSinceLastUsed / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+        
+        if (days > 0) {
+          return `${days} дн. ${hours % 24} ч.`;
+        } else if (hours > 0) {
+          return `${hours} ч. ${minutes % 60} мин.`;
+        } else if (minutes > 0) {
+          return `${minutes} мин.`;
+        } else {
+          return `${seconds} сек.`;
+        }
+      };
       
-      console.log('\n⏳ Ожидайте завершения cooldown перед следующим запуском');
-      throw new Error(`Нет доступных профилей. Cooldown: ${this.config.cooldown_minutes} минут`);
+      const timeSinceFormatted = formatTimeSinceLastUsed(selectedProfile.lastUsed);
+      const domainsInfo = selectedProfile.cookies ? 
+        `${selectedProfile.cookies.uniqueDomains || 0} доменов` : 
+        '0 доменов';
+      
+      // Форматируем дату создания
+      const createdAt = selectedProfile.createdAt ? new Date(selectedProfile.createdAt).toLocaleDateString('ru-RU') : 'неизвестно';
+      const createdAtDays = selectedProfile.createdAt ? 
+        Math.floor((new Date() - new Date(selectedProfile.createdAt)) / (1000 * 60 * 60 * 24)) : 0;
+      
+      console.log('\n🎯 ВЫБРАННЫЙ ПРОФИЛЬ:');
+      console.log(`   Имя: ${selectedProfile.name}`);
+      console.log(`   Устройство: ${selectedProfile.deviceName || 'Unknown'}`);
+      console.log(`   Разрешение: ${selectedProfile.resolution ? `${selectedProfile.resolution.width}x${selectedProfile.resolution.height}` : 'неизвестно'}`);
+      console.log(`   Куки: ${domainsInfo}`);
+      console.log(`   Создан: ${createdAt} (${createdAtDays} дней назад)`);
+      console.log(`   Последнее использование: ${selectedProfile.lastUsed || 'никогда'}`);
+      console.log(`   Время простоя: ${timeSinceFormatted}`);
+      
+      return selectedProfile.name;
+      
+    } catch (error) {
+      console.error('❌ Ошибка выбора профиля:', error.message);
+      throw error;
     }
-    
-    // Сортируем по времени последнего использования (самый старый первым)
-    availableProfiles.sort((a, b) => a.lastUsed - b.lastUsed);
-    
-    const selectedProfile = availableProfiles[0];
-    
-    // Форматируем время простоя в читаемый вид
-    const formatTimeSinceLastUsed = (milliseconds) => {
-      const seconds = Math.floor(milliseconds / 1000);
-      const minutes = Math.floor(seconds / 60);
-      const hours = Math.floor(minutes / 60);
-      const days = Math.floor(hours / 24);
-      
-      if (days > 0) {
-        return `${days} дн. ${hours % 24} ч.`;
-      } else if (hours > 0) {
-        return `${hours} ч. ${minutes % 60} мин.`;
-      } else if (minutes > 0) {
-        return `${minutes} мин.`;
-      } else {
-        return `${seconds} сек.`;
-      }
-    };
-    
-    const timeSinceFormatted = formatTimeSinceLastUsed(selectedProfile.timeSinceLastUsed);
-    
-    console.log(`🎯 Профиль: ${selectedProfile.name} (${selectedProfile.deviceName}) - простоял ${timeSinceFormatted}`);
-    
-    return selectedProfile.name;
   }
 
   /**
@@ -398,6 +386,9 @@ class StarterMultiSurfer {
         console.log('🧹 Консоль очищена для лучшей читаемости');
         console.log(`📊 Статистика: ${this.stats.totalSessions} сессий, ${Math.round((now - this.stats.startTime) / 1000 / 60)} минут работы`);
         lastConsoleClear = now;
+        
+        // Сохраняем статистику в файл
+        this.saveStatsToFile();
       }
       
       console.log(`\n🔄 === СЕССИЯ ${this.stats.totalSessions} ===`);
@@ -427,6 +418,7 @@ class StarterMultiSurfer {
           viewTimeMax: params.viewTimeMax,
           enableTabSwitching: this.config.enable_tab_switching,  // Передаем настройку переключения вкладок
           enableResourceBlocking: this.config.enable_resource_blocking,  // Передаем настройку блокировки ресурсов
+          showBrowser: this.config.show_browser,  // Передаем настройку видимости браузера
           port: this.basePort  // Передаем уникальный порт
         };
         
@@ -454,6 +446,9 @@ class StarterMultiSurfer {
         const sessionEndTime = new Date();
         const sessionDuration = Math.round((sessionEndTime - sessionStartTime) / 1000);
         this.stats.totalWorkTime += sessionDuration;
+        
+        // Обновляем время последнего использования профиля ПОСЛЕ завершения работы
+        this.profileGenerator.updateLastUsed(params.profileName);
         
         console.log(`\n✅ Сессия ${this.stats.totalSessions} завершена успешно!`);
         console.log(`⏱️ Длительность сессии: ${sessionDuration} секунд`);
@@ -491,6 +486,9 @@ class StarterMultiSurfer {
     console.log(`📊 Всего сессий: ${this.stats.totalSessions}`);
     console.log(`⏱️ Общее время работы: ${Math.round((new Date() - this.stats.startTime) / 1000 / 60)} минут`);
     this.showProfileStats();
+    
+    // Сохраняем статистику в файл
+    this.saveStatsToFile();
   }
 
   /**
@@ -506,6 +504,52 @@ class StarterMultiSurfer {
     }
     console.log(`📈 Всего сессий: ${this.stats.totalSessions}`);
     console.log(`⏱️ Общее время работы: ${Math.round(this.stats.totalWorkTime / 60)} минут\n`);
+  }
+
+  /**
+   * Сохраняет статистику в файл
+   */
+  saveStatsToFile() {
+    // Создаем уникальное имя файла на основе времени запуска
+    if (!this.stats.startTime) return;
+    
+    const startTimeStr = this.stats.startTime.toISOString().replace(/[:.]/g, '-').slice(0, -5) + 'Z';
+    const statsFile = `logs/statistics_${startTimeStr}.json`;
+    
+    // Создаем директорию если её нет
+    const logDir = 'logs';
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
+    
+    const now = new Date();
+    
+    const stats = {
+      sessionId: startTimeStr,
+      sessionStartTime: this.stats.startTime.toISOString(),
+      lastUpdateTime: now.toISOString(),
+      totalProfiles: Object.keys(this.stats.profilesUsed).length,
+      totalSessions: this.stats.totalSessions,
+      totalWorkTimeMinutes: Math.round(this.stats.totalWorkTime / 60),
+      uptimeMinutes: Math.round((now - this.stats.startTime) / 1000 / 60),
+      avgSitesPerProfile: this.stats.totalSessions > 0 ? 
+        Math.round((this.config.min_sites + this.config.max_sites) / 2) : 0,
+      profilesUsage: this.stats.profilesUsed,
+      sessionSummary: {
+        totalCompletedSessions: this.stats.totalSessions,
+        avgSessionDuration: this.stats.totalSessions > 0 ? 
+          Math.round(this.stats.totalWorkTime / this.stats.totalSessions) : 0,
+        mostUsedProfile: Object.entries(this.stats.profilesUsed)
+          .sort(([,a], [,b]) => b - a)[0] || null
+      }
+    };
+    
+    try {
+      fs.writeFileSync(statsFile, JSON.stringify(stats, null, 2), 'utf-8');
+      console.log(`💾 Статистика сохранена в ${statsFile}`);
+    } catch (error) {
+      console.error('⚠️ Ошибка сохранения статистики:', error.message);
+    }
   }
 
   /**

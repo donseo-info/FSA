@@ -14,6 +14,7 @@ class BrowserController {
     this.port = options.port || 9222;
     this.proxy = options.proxy || null;
     this.enablePlugins = options.enablePlugins !== false; // по умолчанию включены
+    this.options = options; // Сохраняем options для доступа к showBrowser
     
     // Загружаем конфиг профиля
     const generator = new ProfileGenerator();
@@ -29,8 +30,8 @@ class BrowserController {
     this.enableResourceBlocking = options.enableResourceBlocking !== false; // по умолчанию включено
     this.blockingConfig = options.blockingConfig || {
       useYandexRules: false,
-      blockRulesFile: 'block-rules.txt',
-      allowRulesFile: 'allow-rules.txt'
+      blockRulesFile: 'configs/block-rules.txt',
+      allowRulesFile: 'configs/allow-rules.txt'
     };
     
     // Загружаем правила блокировки только если включена блокировка
@@ -285,7 +286,7 @@ class BrowserController {
   async checkPort(maxAttempts = 3) {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        const testBrowser = await chromium.connectOverCDP(`http://localhost:${this.port}`);
+        const testBrowser = await chromium.connectOverCDP(`http://127.0.0.1:${this.port}`);
         console.log(`⚠️ Chrome уже запущен на порту ${this.port}, закрываем...`);
         await testBrowser.close();
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -318,6 +319,7 @@ class BrowserController {
 
     const chromeArgs = [
       `--remote-debugging-port=${this.port}`,
+      `--remote-debugging-address=127.0.0.1`,
       `--user-data-dir=${this.profilePath}`,
       `--window-size=${this.config.resolution.width},${this.config.resolution.height}`,
       '--no-first-run',
@@ -355,6 +357,19 @@ class BrowserController {
     chromeArgs.push('--disable-notifications');
     chromeArgs.push('--disable-popup-blocking');
     chromeArgs.push('--disable-features=TranslateUI');
+    
+    // Скрываем/показываем окно браузера
+    if (this.options?.showBrowser) {
+      // Показываем браузер свернутым
+      chromeArgs.push('--start-minimized');
+    } else {
+      // Скрываем браузер вне экрана
+      chromeArgs.push('--window-position=0,-9999');
+    }
+    
+    // Оставляем только необходимые флаги
+    chromeArgs.push('--disable-infobars');
+    chromeArgs.push('--disable-dev-shm-usage');
 
     this.chromeProcess = spawn(this.chromePath, chromeArgs, {
       detached: true,
@@ -363,7 +378,9 @@ class BrowserController {
     
     this.chromeProcess.unref();
     console.log('⏳ Запуск Chrome...\n');
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    
+    // Увеличиваем ожидание до 7 секунд
+    await new Promise(resolve => setTimeout(resolve, 7000));
   }
 
 
@@ -373,7 +390,24 @@ class BrowserController {
   async connect() {
     console.log('🔗 Подключение через CDP...');
     
-    this.browser = await chromium.connectOverCDP(`http://localhost:${this.port}`);
+    // Пробуем подключиться с повторами
+    let attempts = 0;
+    const maxAttempts = 10;
+    while (attempts < maxAttempts) {
+      try {
+        this.browser = await chromium.connectOverCDP(`http://127.0.0.1:${this.port}`);
+        console.log(`✅ CDP подключение установлено с попытки ${attempts + 1}`);
+        break;
+      } catch (error) {
+        attempts++;
+        if (attempts >= maxAttempts) {
+          console.error(`❌ Не удалось подключиться к CDP за ${maxAttempts} попыток`);
+          throw error;
+        }
+        console.log(`⏳ Попытка ${attempts}/${maxAttempts} - ждем 1 сек...`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
     this.context = this.browser.contexts()[0];
     
     // Блокируем попапы и новые окна (но не наши собственные страницы и не Яндекс)
